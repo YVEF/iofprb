@@ -12,6 +12,8 @@
 #define SWAP_MAGIC1 "SWAP-SPACE"
 #define SWAP_MAGIC2 "SWAPSPACE2"
 
+#define SWAPFS "[swap]"
+
 union swap_header {
     struct {
         // char reserved[PAGE_SIZE - 10]; use offset here
@@ -29,7 +31,7 @@ union swap_header {
     } info;
 };
 
-void examine_if_swap_partition(int fd, partinfo* partition)
+void probe_swap_partition(int fd, partinfo* partition)
 {
     off_t page_size = getpagesize();
     if(partition->size < page_size)
@@ -42,9 +44,12 @@ void examine_if_swap_partition(int fd, partinfo* partition)
     swap_header* header = reinterpret_cast<swap_header*>(static_cast<char*>(buffer) + page_size - 10);
     if(memcmp(header->magic.magic, SWAP_MAGIC2, sizeof(swap_header::magic.magic)) == 0
     || memcmp(header->magic.magic, SWAP_MAGIC1, sizeof(swap_header::magic.magic)) == 0)
+    {
         partition->is_swap = true;
+        partition->fstype = SWAPFS;
+    }
 
-    munmap(buffer, page_size);
+    ASSERT(munmap(buffer, page_size) != -1);
 }
 
 #endif //IOFPRB_SWAP_H

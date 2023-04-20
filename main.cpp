@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <sys/param.h>
 #include "fs/swap.h"
+#include "fs/fat.h"
 
 // #include <sys/uio.h>
 
@@ -41,6 +42,7 @@ void capture_blk_info(int fd, diskctx* disk, const std::vector<fs::mntpoint>& mo
 bool is_physical_partition(const std::string& partname);
 void read_disk_model(int fd, diskctx* disk);
 void fill_partition_space(partinfo* partition);
+void probe_fs(int fd, partinfo* partition);
 
 int main()
 {
@@ -51,7 +53,7 @@ int main()
     char bufdev[30], bufmnt[30], buffs[30];
     while(std::getline(mount_stream, line))
     {
-        std::sscanf(line.c_str(), "%s %s ", bufdev, bufmnt);
+        std::sscanf(line.c_str(), "%s %s %s ", bufdev, bufmnt, buffs);
         mount_points.emplace_back(fs::mntpoint{bufdev, bufmnt, buffs});
     }
     mount_stream.close();
@@ -136,7 +138,25 @@ void capture_blk_info(int fd, diskctx* disk, const std::vector<fs::mntpoint>& mo
         // hold partition descriptor here
         int fdpart = open(partinfo->name.c_str(), O_RDONLY | O_NONBLOCK);
         partinfo->size = blkid_get_dev_size(fdpart);
-        examine_if_swap_partition(fdpart, partinfo);
+        probe_swap_partition(fdpart, partinfo);
+        // do not probe swap partition
+        if(!partinfo->is_swap)
+        {
+            const std::string& devname = partinfo->name;
+            auto mntp = std::find_if(mount_points.begin(), mount_points.end(),
+                                     [&devname](const fs::mntpoint& p)
+                                     { return p.dev == devname; });
+
+            if(mntp == mount_points.end())
+                // check the fs directly for not mounted partition
+                probe_fs(fdpart, partinfo);
+            else
+            {
+                partinfo->fstype = mntp->fstype;
+                partinfo->mntroot = mntp->mntroot;
+                fill_partition_space(partinfo);
+            }
+        }
         close(fdpart);
 
         partinfo->partition_type_guid = blkid_partition_get_type_string(par);
@@ -160,19 +180,6 @@ void capture_blk_info(int fd, diskctx* disk, const std::vector<fs::mntpoint>& mo
         auto prttbl = guidToPartTypeMap_.find(partinfo->partition_type_guid);
         ASSERT(prttbl != guidToPartTypeMap_.end());
         partinfo->partition_type = prttbl->second;
-        // temp!!!
-        if(partinfo->is_swap || partinfo->name == "/dev/sda1")
-            continue;
-
-        const std::string& devname = partinfo->name;
-        auto mntp = std::find_if(mount_points.begin(), mount_points.end(),
-                                 [&devname](const fs::mntpoint& p)
-                                 { return p.dev == devname; });
-
-        ASSERT(mntp != mount_points.end());
-        partinfo->fstype = mntp->fstype;
-        partinfo->mntroot = mntp->mntroot;
-        fill_partition_space(partinfo);
     }
 
     blkid_free_probe(pr);
@@ -243,3 +250,9 @@ void fill_partition_space(partinfo* partition)
     partition->free = stat.f_bfree*stat.f_bsize;
 }
 
+void probe_fs(int fd, partinfo* partition)
+{
+    if(fs::probe_fat_fs(fd, partition))
+        return;
+
+}

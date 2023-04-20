@@ -22,6 +22,7 @@ struct partinfo
     int type;
     std::size_t offset;
     bool is_swap;
+    bool is_boot;
 
     std::string partition_type;
     std::size_t free;

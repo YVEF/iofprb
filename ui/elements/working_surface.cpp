@@ -44,13 +44,15 @@ void working_surface::render(render_context& ctx) noexcept
         ASSERT(curr_disk != diskinfos_.end());
 
 
-        if (ImGui::BeginTable("Partitions", 6))
+        if (ImGui::BeginTable("Partitions", 8))
         {
             ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_IndentEnable | ImGuiTableColumnFlags_NoSort, 50);
-            ImGui::TableSetupColumn("Logic name", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_IndentEnable);
+            ImGui::TableSetupColumn("Logic Name", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_IndentEnable);
             ImGui::TableSetupColumn("Offset", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_IndentEnable, 80);
-            ImGui::TableSetupColumn("Sectors count", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_IndentEnable);
+            ImGui::TableSetupColumn("Sectors Count", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_IndentEnable);
             ImGui::TableSetupColumn("Partition Type", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_IndentEnable);
+            ImGui::TableSetupColumn("Mount Point", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_IndentEnable);
+            ImGui::TableSetupColumn("FS", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_IndentEnable, 58);
             ImGui::TableSetupColumn("Usage");
             ImGui::TableHeadersRow();
 
@@ -70,7 +72,10 @@ void working_surface::render(render_context& ctx) noexcept
                 ImGui::TableNextColumn();
                 ImGui::Text("%s", part->partition_type.c_str());
                 ImGui::TableNextColumn();
-
+                ImGui::Text("%s", part->mntroot.empty() ? "Not Mounted" : part->mntroot.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", part->fstype.c_str());
+                ImGui::TableNextColumn();
 
                 ImGui::ProgressBar(static_cast<float>(part->size - part->free)/static_cast<float>(part->size));
             }

@@ -6,7 +6,7 @@
 namespace ui {
 
 #define APP_HIGH 850
-#define APP_WIDTH 450
+#define APP_WIDTH 550
 
 bool application::init_imgui()
 {
