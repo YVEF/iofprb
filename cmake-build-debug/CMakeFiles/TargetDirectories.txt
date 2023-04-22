@@ -1,3 +1,0 @@
-/home/iaroslav/CLionProjects/iofprb/cmake-build-debug/CMakeFiles/iofprb.dir
-/home/iaroslav/CLionProjects/iofprb/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/iaroslav/CLionProjects/iofprb/cmake-build-debug/CMakeFiles/rebuild_cache.dir
