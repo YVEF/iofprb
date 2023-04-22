@@ -56,6 +56,13 @@ build CMakeFiles/iofprb.dir/main.cpp.o: CXX_COMPILER__iofprb_Debug /home/iarosla
   OBJECT_DIR = CMakeFiles/iofprb.dir
   OBJECT_FILE_DIR = CMakeFiles/iofprb.dir
 
+build CMakeFiles/iofprb.dir/utils/hlp.cpp.o: CXX_COMPILER__iofprb_Debug /home/iaroslav/CLionProjects/iofprb/utils/hlp.cpp || cmake_object_order_depends_target_iofprb
+  DEP_FILE = CMakeFiles/iofprb.dir/utils/hlp.cpp.o.d
+  FLAGS = -g -fcolor-diagnostics -Wall -Wextra -Wpedantic -std=gnu++20
+  INCLUDES = -isystem /home/iaroslav/CLionProjects/iofprb/cmake-build-debug/vcpkg_installed/x64-linux/include
+  OBJECT_DIR = CMakeFiles/iofprb.dir
+  OBJECT_FILE_DIR = CMakeFiles/iofprb.dir/utils
+
 build CMakeFiles/iofprb.dir/ui/application.cpp.o: CXX_COMPILER__iofprb_Debug /home/iaroslav/CLionProjects/iofprb/ui/application.cpp || cmake_object_order_depends_target_iofprb
   DEP_FILE = CMakeFiles/iofprb.dir/ui/application.cpp.o.d
   FLAGS = -g -fcolor-diagnostics -Wall -Wextra -Wpedantic -std=gnu++20
@@ -120,7 +127,7 @@ build CMakeFiles/iofprb.dir/providers/driveprv.cpp.o: CXX_COMPILER__iofprb_Debug
 #############################################
 # Link the executable iofprb
 
-build iofprb: CXX_EXECUTABLE_LINKER__iofprb_Debug CMakeFiles/iofprb.dir/main.cpp.o CMakeFiles/iofprb.dir/ui/application.cpp.o CMakeFiles/iofprb.dir/ui/backend/imgui_impl_glfw.cpp.o CMakeFiles/iofprb.dir/ui/backend/imgui_impl_vulkan.cpp.o CMakeFiles/iofprb.dir/ui/elements/base_element.cpp.o CMakeFiles/iofprb.dir/ui/elements/topmenu.cpp.o CMakeFiles/iofprb.dir/ui/elements/working_surface.cpp.o CMakeFiles/iofprb.dir/ui/uihelper.cpp.o CMakeFiles/iofprb.dir/providers/driveprv.cpp.o | vcpkg_installed/x64-linux/debug/lib/libftxui-dom.a vcpkg_installed/x64-linux/debug/lib/libftxui-screen.a vcpkg_installed/x64-linux/debug/lib/libftxui-component.a vcpkg_installed/x64-linux/debug/lib/libimguid.a vcpkg_installed/x64-linux/debug/lib/libglad.a /usr/lib/libglfw.so.3.3 vcpkg_installed/x64-linux/debug/lib/libftxui-dom.a vcpkg_installed/x64-linux/debug/lib/libftxui-screen.a
+build iofprb: CXX_EXECUTABLE_LINKER__iofprb_Debug CMakeFiles/iofprb.dir/main.cpp.o CMakeFiles/iofprb.dir/utils/hlp.cpp.o CMakeFiles/iofprb.dir/ui/application.cpp.o CMakeFiles/iofprb.dir/ui/backend/imgui_impl_glfw.cpp.o CMakeFiles/iofprb.dir/ui/backend/imgui_impl_vulkan.cpp.o CMakeFiles/iofprb.dir/ui/elements/base_element.cpp.o CMakeFiles/iofprb.dir/ui/elements/topmenu.cpp.o CMakeFiles/iofprb.dir/ui/elements/working_surface.cpp.o CMakeFiles/iofprb.dir/ui/uihelper.cpp.o CMakeFiles/iofprb.dir/providers/driveprv.cpp.o | vcpkg_installed/x64-linux/debug/lib/libftxui-dom.a vcpkg_installed/x64-linux/debug/lib/libftxui-screen.a vcpkg_installed/x64-linux/debug/lib/libftxui-component.a vcpkg_installed/x64-linux/debug/lib/libimguid.a vcpkg_installed/x64-linux/debug/lib/libglad.a /usr/lib/libglfw.so.3.3 vcpkg_installed/x64-linux/debug/lib/libftxui-dom.a vcpkg_installed/x64-linux/debug/lib/libftxui-screen.a
   FLAGS = -g
   LINK_FLAGS = -lblkid -ludev
   LINK_LIBRARIES = vcpkg_installed/x64-linux/debug/lib/libftxui-dom.a  vcpkg_installed/x64-linux/debug/lib/libftxui-screen.a  vcpkg_installed/x64-linux/debug/lib/libftxui-component.a  vcpkg_installed/x64-linux/debug/lib/libimguid.a  vcpkg_installed/x64-linux/debug/lib/libglad.a  /usr/lib/libglfw.so.3.3  -lvulkan  vcpkg_installed/x64-linux/debug/lib/libftxui-dom.a  vcpkg_installed/x64-linux/debug/lib/libftxui-screen.a

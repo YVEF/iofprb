@@ -1,7 +1,7 @@
 Detecting compiler hash for triplet x64-linux...
 All requested packages are currently installed.
-Restored 0 package(s) from /home/iaroslav/.cache/vcpkg/archives in 1.2 us. Use --debug to see more details.
-Total install time: 9.31 us
+Restored 0 package(s) from /home/iaroslav/.cache/vcpkg/archives in 960 ns. Use --debug to see more details.
+Total install time: 6.64 us
 ftxui provides CMake targets:
 
     # this is heuristically generated, and may not be correct

@@ -5,7 +5,7 @@
 
 namespace ui {
 
-#define APP_HIGH 850
+#define APP_HIGH 1000
 #define APP_WIDTH 550
 
 bool application::init_imgui()
@@ -22,7 +22,7 @@ bool application::init_imgui()
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForVulkan(window_, true);
-    ImGui_ImplVulkan_InitInfo init_info = {};
+    ImGui_ImplVulkan_InitInfo init_info{};
     init_info.Instance = g_Instance;
     init_info.PhysicalDevice = g_PhysicalDevice;
     init_info.Device = g_Device;

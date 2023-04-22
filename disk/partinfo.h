@@ -28,6 +28,9 @@ struct partinfo
     std::size_t free;
     std::string fstype;
     std::string mntroot;
+
+    bool is_mounted() const noexcept
+    { return !mntroot.empty(); }
 };
 
 #endif //IOFPRB_PARTINFO_H

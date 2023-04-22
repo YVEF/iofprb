@@ -33,7 +33,7 @@ union swap_header {
 
 void probe_swap_partition(int fd, partinfo* partition)
 {
-    off_t page_size = getpagesize();
+    ull page_size = static_cast<ull>(getpagesize());
     if(partition->size < page_size)
         // to small to be a swap
         return;

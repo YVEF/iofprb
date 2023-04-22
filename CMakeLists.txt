@@ -29,6 +29,7 @@ find_package(ftxui CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux
 find_package(glad CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux/share/glad")
 
 # capture src
+file(GLOB_RECURSE utilssrc utils/*.cpp)
 file(GLOB_RECURSE uisrc ui/*.cpp)
 file(GLOB_RECURSE disksrc disk/*.cpp)
 file(GLOB_RECURSE fssrc fs/*.cpp)
@@ -37,6 +38,7 @@ file(GLOB_RECURSE prvsrc providers/*.cpp)
 # executable
 add_executable(iofprb
         main.cpp
+        ${utilssrc}
         ${uisrc}
         ${disksrc}
         ${fssrc}
