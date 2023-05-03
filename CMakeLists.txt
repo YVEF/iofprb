@@ -5,9 +5,10 @@ project(iofprb)
 set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -lblkid")
 
+add_definitions(-DDUMMY_TEST_ENGINE)
 set(VERBOSE)
 set(CMAKE_BUILD_TYPE Debug)
-add_compile_options(-Wall -Wextra -Wpedantic)
+add_compile_options(-Wall -Wextra -Wpedantic -O0 -g)
 add_link_options(-lblkid -ludev)
 
 
@@ -27,6 +28,8 @@ find_package(Vulkan REQUIRED)
 find_package(imgui CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux/share/imgui")
 find_package(ftxui CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux/share/ftxui")
 find_package(glad CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux/share/glad")
+find_package(implot CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux/share/implot")
+
 
 # capture src
 file(GLOB_RECURSE utilssrc utils/*.cpp)
@@ -34,6 +37,7 @@ file(GLOB_RECURSE uisrc ui/*.cpp)
 file(GLOB_RECURSE disksrc disk/*.cpp)
 file(GLOB_RECURSE fssrc fs/*.cpp)
 file(GLOB_RECURSE prvsrc providers/*.cpp)
+file(GLOB_RECURSE jobsrc jobs/*.cpp)
 
 # executable
 add_executable(iofprb
@@ -42,7 +46,8 @@ add_executable(iofprb
         ${uisrc}
         ${disksrc}
         ${fssrc}
-        ${prvsrc})
+        ${prvsrc}
+        ${jobsrc})
 
 # linking libs
 target_link_libraries(iofprb PRIVATE ftxui::dom ftxui::screen ftxui::component)
@@ -50,4 +55,4 @@ target_link_libraries(iofprb PRIVATE imgui::imgui)
 target_link_libraries(iofprb PRIVATE glad::glad)
 target_link_libraries(iofprb PRIVATE glfw)
 target_link_libraries(iofprb PRIVATE vulkan)
-
+target_link_libraries(iofprb PRIVATE implot::implot)

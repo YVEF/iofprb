@@ -1,16 +1,15 @@
-#ifndef IOFPRB_MISC_H
-#define IOFPRB_MISC_H
-
-#include <imgui.h>
+#include "imgui_customs.h"
 
 namespace ImGui::Custom {
 
 float ProgressBar(float value, const float minValue, const float maxValue, const char *format,
-                  const ImVec2 &sizeOfBarWithoutTextInPixels, const ImVec4 &colorLeft, const ImVec4 &colorRight, const ImVec4 &colorBorder)    {
+                  const ImVec2 &sizeOfBarWithoutTextInPixels, const ImVec4 &colorLeft, const ImVec4 &colorRight,
+                  const ImVec4 &colorBorder)
+{
     if (value<minValue) value=minValue;
     else if (value>maxValue) value = maxValue;
     const float valueFraction = (maxValue==minValue) ? 1.0f : ((value-minValue)/(maxValue-minValue));
-    const bool needsPercConversion = strstr(format,"%%")!=NULL;
+    const bool needsPercConversion = strstr(format,"%%") != nullptr;
 
     ImVec2 size = sizeOfBarWithoutTextInPixels;
     if (size.x<=0) size.x = ImGui::GetWindowWidth()*0.25f;
@@ -31,8 +30,30 @@ float ProgressBar(float value, const float minValue, const float maxValue, const
     return valueFraction;
 }
 
+
+
+
+bool RenderButton(const char* label, const ui::render_context& ctx, bool enabled)
+{
+    if(!enabled)
+    {
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+    }
+
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ctx.colors.hovered_button_color1);
+    ImGui::PushStyleColor(ImGuiCol_Button, ctx.colors.hovered_button_color2);
+
+    bool result = ImGui::Button(label);
+    ImGui::PopStyleColor(2);
+
+    if(!enabled)
+    {
+        ImGui::PopStyleVar();
+        ImGui::PopItemFlag();
+    }
+
+    return result;
 }
 
-
-
-#endif //IOFPRB_MISC_H
+}

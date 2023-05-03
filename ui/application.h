@@ -1,12 +1,14 @@
 #ifndef IOFPRB_APPLICATION_H
 #define IOFPRB_APPLICATION_H
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 #include <imgui.h>
 #include "backend/imgui_impl_glfw.h"
 #include "backend/imgui_impl_vulkan.h"
 #include <cstdio>
 #include <cstdlib>
-//#include <glad/glad.h>
+
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -14,8 +16,9 @@
 #include <vector>
 #include <memory>
 #include "elements/base_element.h"
-#include "style.h"
+#include "st_color.h"
 #include "../providers/driveprv.h"
+
 
 namespace ui {
 
@@ -384,22 +387,24 @@ static inline void FramePresent(ImGui_ImplVulkanH_Window* wd)
 
 class application
 {
+public:
+    explicit application(providers::driveprv& drv) noexcept : config_(drv.get_drives_info()), driveprv_(drv) {}
+    bool init() noexcept;
+    void run() noexcept;
+    void cleanup() noexcept;
+
 private:
     GLFWwindow* window_;
     ImGui_ImplVulkanH_Window* wd_;
     VkResult err_;
-    style styles{};
+    st_color styles_{};
+    config_state config_;
+
     std::vector<std::shared_ptr<base_element>> elements_;
     const providers::driveprv& driveprv_;
 
     bool init_vulkan();
     bool init_imgui();
-
-public:
-    explicit application(providers::driveprv& drv) noexcept : driveprv_(drv) {}
-    bool init() noexcept;
-    void run() noexcept;
-    void cleanup() noexcept;
 };
 
 } // ui

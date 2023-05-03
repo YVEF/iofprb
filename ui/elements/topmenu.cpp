@@ -2,6 +2,7 @@
 #include <cstdlib>
 
 namespace ui {
+
 void topmenu::render(render_context& ctx) noexcept
 {
     bool show_popup = false;
@@ -11,9 +12,9 @@ void topmenu::render(render_context& ctx) noexcept
     ctx.add_offset(ImVec2(0, ImGui::GetWindowSize().y));
 
     ImGuiStyle& style = ImGui::GetStyle();
-    style.Colors[ImGuiCol_MenuBarBg] = ctx.styles.main_color_dark1;
-    style.Colors[ImGuiCol_Text] = ctx.styles.active_text;
-    style.Colors[ImGuiCol_HeaderHovered] = ctx.styles.hovered_button_color1;
+    style.Colors[ImGuiCol_MenuBarBg] = ctx.colors.main_color_dark1;
+    style.Colors[ImGuiCol_Text] = ctx.colors.active_text;
+    style.Colors[ImGuiCol_HeaderHovered] = ctx.colors.hovered_button_color1;
 
     if (ImGui::BeginMenu("File"))
     {

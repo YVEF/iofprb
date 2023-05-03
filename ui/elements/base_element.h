@@ -6,16 +6,23 @@
 #include <memory>
 #include "../render_context.h"
 
+#define BASE_EL_REGULAR_OVERRIDE                                                            \
+void render(render_context& ctx) noexcept override;
+
+
 namespace ui {
 
 class base_element
 {
-protected:
-    std::vector<std::shared_ptr<base_element>> child_elements_;
-
 public:
     virtual void render(render_context& ctx) noexcept = 0;
+    virtual bool skip([[maybe_unused]] const render_context& ctx) const noexcept
+    { return false; }
     virtual ~base_element() noexcept = default;
+
+
+protected:
+    std::vector<std::shared_ptr<base_element>> child_elements_;
 };
 
 } // ui

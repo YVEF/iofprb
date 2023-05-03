@@ -1,3 +1,5 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 #include "ui/application.h"
 #include "providers/driveprv.h"
 #include <iostream>
@@ -32,11 +34,9 @@
 #include <sys/param.h>
 #include "fs/swap.h"
 #include "fs/fat.h"
-
-// #include <sys/uio.h>
+#include <sysfs/libsysfs.h>
 
 #define PROC_PARTITIONS "/proc/partitions"
-#define PROC_MOUNTS "/proc/mounts"
 
 void capture_blk_info(int fd, diskctx* disk, const std::vector<fs::mntpoint>& mount_points);
 bool is_physical_partition(const std::string& partname);
@@ -48,7 +48,7 @@ int main()
 {
     std::string line;
     std::vector<fs::mntpoint> mount_points;
-    std::ifstream mount_stream(PROC_MOUNTS);
+    std::ifstream mount_stream(SYSFS_PROC_MNTS);
     ASSERT(mount_stream);
     char bufdev[30], bufmnt[30], buffs[30];
     while(std::getline(mount_stream, line))
@@ -118,6 +118,11 @@ void capture_blk_info(int fd, diskctx* disk, const std::vector<fs::mntpoint>& mo
     disk->offset = blkid_topology_get_alignment_offset(tp);
     disk->physical_sector_cnt = disk->size / disk->physical_sector_size;
     disk->logical_sector_cnt = disk->size / disk->logical_sector_size;
+
+    struct stat fsstat;
+    ASSERT(!fstat(fd, &fsstat));
+    disk->fs_blk_size = fsstat.st_blksize;
+    disk->fs_occup_blk_cnt = fsstat.st_blocks;
 
     blkid_partlist ls = blkid_probe_get_partitions(pr);
     ASSERT(ls);

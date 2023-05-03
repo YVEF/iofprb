@@ -11,5 +11,8 @@
   }, {
     "name" : "glad",
     "version>=" : "0.1.36"
+  }, {
+    "name" : "implot",
+    "version>=" : "0.14#1"
   } ]
 }

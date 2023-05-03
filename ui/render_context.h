@@ -2,27 +2,33 @@
 #define IOFPRB_RENDER_CONTEXT_H
 
 #include <cstdlib>
-#include "style.h"
+#include "st_color.h"
 #include <imgui.h>
+#include "../providers/config_state.h"
 
 namespace ui {
 
 class render_context
 {
-    ImVec2 offset_;
-
 public:
-    explicit render_context(const style& st) noexcept
-    : styles(st) {}
+    explicit render_context(const st_color& st) noexcept
+    : colors(st) {}
 
-    const style& styles;
-    void add_offset(ImVec2 off) noexcept
+    const st_color& colors;
+    const float standard_space = 15.f;
+
+    void add_offset(const ImVec2& off) noexcept
     {
         offset_.x += off.x;
         offset_.y += off.y;
     }
 
-    ImVec2 get_offset() const noexcept { return offset_; }
+    [[nodiscard]] ImVec2 get_offset() const noexcept { return offset_; }
+
+    bool bench_running = false;
+
+private:
+    ImVec2 offset_;
 };
 
 }

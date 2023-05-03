@@ -19,6 +19,9 @@ struct diskctx
     std::size_t offset;
     unsigned int logical_sector_cnt;
     unsigned int physical_sector_cnt;
+    unsigned long fs_blk_size;
+    unsigned long fs_occup_blk_cnt;
+
 
     std::string disk_id;
     std::string partition_table;

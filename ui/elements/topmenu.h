@@ -5,13 +5,14 @@
 namespace ui {
 class topmenu : public base_element
 {
-    ImGuiWindowFlags flags_ = ImGuiWindowFlags_NoResize
-            | ImGuiWindowFlags_NoMove
-            | ImGuiWindowFlags_NoScrollbar
-            | ImGuiWindowFlags_NoSavedSettings;
-
 public:
-    void render(render_context& ctx) noexcept override;
+    BASE_EL_REGULAR_OVERRIDE
+
+private:
+    ImGuiWindowFlags flags_ = ImGuiWindowFlags_NoResize
+                              | ImGuiWindowFlags_NoMove
+                              | ImGuiWindowFlags_NoScrollbar
+                              | ImGuiWindowFlags_NoSavedSettings;
 };
 
 }

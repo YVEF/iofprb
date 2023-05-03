@@ -1,7 +1,10 @@
 #include "application.h"
 #include <iostream>
 #include "elements/topmenu.h"
-#include "elements/working_surface.h"
+//#include "elements/start_menu.h"
+//#include "elements/bench_chart.h"
+#include "elements/main_canvas.h"
+#include <implot.h>
 
 namespace ui {
 
@@ -13,6 +16,7 @@ bool application::init_imgui()
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 
@@ -78,7 +82,7 @@ bool application::init() noexcept
     }
 
     elements_.emplace_back(std::make_shared<topmenu>());
-    elements_.emplace_back(std::make_shared<working_surface>(driveprv_.get_drives_info()));
+    elements_.emplace_back(std::make_shared<main_canvas>(config_, driveprv_));
 
     return false;
 }
@@ -155,9 +159,18 @@ void application::run() noexcept
         ImGuiStyle& style = ImGui::GetStyle();
         style.WindowBorderSize = 0.0f;
 
-        render_context ctx(styles);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, styles_.main_color_dark2);
+        render_context ctx(styles_);
         for(const auto& el : elements_)
+        {
+            if(el->skip(ctx))
+                continue;
+
             el->render(ctx);
+        }
+
+        ImGui::PopStyleColor();
+
 
         ImGui::Render();
         ImDrawData* draw_data = ImGui::GetDrawData();
@@ -181,6 +194,7 @@ void application::cleanup() noexcept
     check_vk_result(err_);
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
     ImGui::DestroyContext();
 
     CleanupVulkanWindow();
