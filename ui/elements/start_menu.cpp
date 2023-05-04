@@ -33,8 +33,8 @@ void start_menu::render(ui::render_context& ctx) noexcept
 
         ImGui::Custom::RenderCombo("##diskmenu", -1.f, &config_.disk_info_id,
                                    config_.disks_info,
-                                   (std::function<std::string(int)>)[&disks](int i)
-                                   { return disks[i].name; },
+                                   (std::function<std::string(int)>)
+                                   [&disks](int i) { return disks[i].name; },
                                    &notify_changed);
 
         ImGui::SameLine(0, ctx.standard_space);
@@ -42,7 +42,7 @@ void start_menu::render(ui::render_context& ctx) noexcept
         if(ImGui::Custom::RenderButton("Run", ctx))
             is_run_pressed = true;
 
-        std::string& description = config_.disks_info[config_.disk_info_id].description;
+        const std::string& description = config_.disks_info[config_.disk_info_id].description;
 
         ImGui::Separator();
         ImGui::Text("%s", description.c_str());
@@ -76,7 +76,7 @@ void start_menu::render(ui::render_context& ctx) noexcept
 
                 auto part = current_disk.partitions->at(row);
                 ImGui::TableNextColumn();
-                ImGui::Text("%s", part->name.c_str());
+                ImGui::Text("%s", part->devname.c_str());
                 ImGui::TableNextColumn();
                 ImGui::Text("%ld", part->offset);
                 ImGui::TableNextColumn();

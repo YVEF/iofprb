@@ -388,7 +388,10 @@ static inline void FramePresent(ImGui_ImplVulkanH_Window* wd)
 class application
 {
 public:
-    explicit application(providers::driveprv& drv) noexcept : config_(drv.get_drives_info()), driveprv_(drv) {}
+    explicit application(providers::driveprv& drv) noexcept : config_(drv.get_drives_info()), driveprv_(drv)
+    {
+
+    }
     bool init() noexcept;
     void run() noexcept;
     void cleanup() noexcept;

@@ -5,6 +5,7 @@
 #include "bench_chart.h"
 #include <memory>
 #include <array>
+#include "testmenu.h"
 
 namespace ui {
 

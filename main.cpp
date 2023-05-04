@@ -66,16 +66,16 @@ int main()
     std::getline(proc_stream, line);
     // empty line
     std::getline(proc_stream, line);
-    std::string part_name;
+    std::string dev_name;
     while(std::getline(proc_stream, line))
     {
-        part_name = "/dev/" + line.substr(line.rfind(' ') + 1);
-        if(!is_physical_partition(part_name))
+        dev_name = "/dev/" + line.substr(line.rfind(' ') + 1);
+        if(!is_physical_partition(dev_name))
             continue;
 
-        int fd = open(part_name.c_str(), O_RDONLY | O_CLOEXEC | O_NONBLOCK);
+        int fd = open(dev_name.c_str(), O_RDONLY | O_CLOEXEC | O_NONBLOCK);
         ASSERT(fd);
-        auto ctx = new diskctx(part_name);
+        auto ctx = new diskctx(dev_name);
         capture_blk_info(fd, ctx, mount_points);
         disks.push_back(ctx);
         close(fd);
@@ -133,7 +133,7 @@ void capture_blk_info(int fd, diskctx* disk, const std::vector<fs::mntpoint>& mo
         ASSERT(par);
 
         // find more ways to grab the name
-        auto partinfo = new struct partinfo(disk->name + std::to_string(blkid_partition_get_partno(par)),
+        auto partinfo = new struct partinfo(disk->devname + std::to_string(blkid_partition_get_partno(par)),
                                             blkid_partition_is_logical(par),
                                             blkid_partition_is_primary(par));
 
@@ -141,13 +141,13 @@ void capture_blk_info(int fd, diskctx* disk, const std::vector<fs::mntpoint>& mo
         partinfo->sector_cnt = blkid_partition_get_size(par);
 
         // hold partition descriptor here
-        int fdpart = open(partinfo->name.c_str(), O_RDONLY | O_NONBLOCK);
+        int fdpart = open(partinfo->devname.c_str(), O_RDONLY | O_NONBLOCK);
         partinfo->size = blkid_get_dev_size(fdpart);
         probe_swap_partition(fdpart, partinfo);
         // do not probe swap partition
         if(!partinfo->is_swap)
         {
-            const std::string& devname = partinfo->name;
+            const std::string& devname = partinfo->devname;
             auto mntp = std::find_if(mount_points.begin(), mount_points.end(),
                                      [&devname](const fs::mntpoint& p)
                                      { return p.dev == devname; });
@@ -180,7 +180,11 @@ void capture_blk_info(int fd, diskctx* disk, const std::vector<fs::mntpoint>& mo
             to_ascii_upper_case(disk->partition_table);
         }
         if(disk->disk_id.empty() && partinfo->is_primary)
+        {
             disk->disk_id = blkid_parttable_get_id(table);
+            to_ascii_upper_case(disk->disk_id);
+        }
+
 
         auto prttbl = guidToPartTypeMap_.find(partinfo->partition_type_guid);
         ASSERT(prttbl != guidToPartTypeMap_.end());
@@ -218,7 +222,7 @@ void read_disk_model(int fd, diskctx* disk)
 
     udev_enumerate_add_match_subsystem(enumerate, "block");
     udev_enumerate_add_match_property(enumerate, "DEVTYPE", "disk");
-    udev_enumerate_add_match_property(enumerate, "DEVNAME", disk->name.c_str());
+    udev_enumerate_add_match_property(enumerate, "DEVNAME", disk->devname.c_str());
     udev_enumerate_scan_devices(enumerate);
     devices = udev_enumerate_get_list_entry(enumerate);
 

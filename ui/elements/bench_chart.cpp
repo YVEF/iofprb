@@ -21,24 +21,8 @@ bench_chart::bench_chart(config_state& config, const providers::driveprv& drv) n
     round_read_thr_.push_back(0.0);
     round_write_thr_.push_back(0.0);
 
-    job_ = jobs::initialize_job(config_);
+    job_ = jobs::initialize_job(config_, driverprv_.get_disk(config_.get_disk_uuid()));
     job_->start();
-}
-
-static inline
-void get_minmax(const std::vector<double>& vec, double* min, double* max)
-{
-    double mi = std::numeric_limits<double>::max(), ma = std::numeric_limits<double>::min();
-    for(auto v : vec)
-    {
-        if(mi > v)
-            mi = v;
-        if(ma < v)
-            ma = v;
-    }
-
-    *min = mi;
-    *max = ma;
 }
 
 void bench_chart::render(ui::render_context& ctx) noexcept
@@ -87,7 +71,7 @@ void bench_chart::render(ui::render_context& ctx) noexcept
 
         ImGui::Text("Round: %u / Iteration %u", c_round_, c_iteration_);
         ImGui::SameLine(0, ctx.standard_space);
-        ImGui::Text("Max Read / Write: %lf / %lf MiB", read_max_, write_max_);
+        ImGui::Text("Max Read / Write: %lf MiB / %lf MiB", read_max_, write_max_);
 
         ImGui::End();
     }
@@ -161,15 +145,15 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         ImPlot::SetNextAxisLimits(ImAxis_Y1, std::min(read_min_, write_min_) - 0.8, std::max(read_max_, write_max_) + 1.2, ImPlotCond_Always);
         ImPlot::SetNextAxisLimits(ImAxis_X1, 0, std::max(5, static_cast<int>(round_read_thr_.size() + 1)), ImPlotCond_Always);
 
-        if (ImPlot::BeginPlot("##barplot", ImVec2(size.x-17, size.y-17), plotflags_))
+        if (ImPlot::BeginPlot("##barplot", ImVec2(size.x-17, size.y-17), plotflags_ & ~ImPlotFlags_NoLegend))
         {
             ImPlot::SetupAxes("Rounds", "Throughtput", ImPlotAxisFlags_NoHighlight, ImPlotAxisFlags_NoHighlight);
             ImPlot::PushStyleColor(ImPlotCol_Fill, ctx.colors.bars1);
-            ImPlot::PlotBars("##barsrd", round_read_thr_.data(), static_cast<int>(round_read_thr_.size()), 0.3, 0.15);
+            ImPlot::PlotBars("RD", round_read_thr_.data(), static_cast<int>(round_read_thr_.size()), 0.3, 0.15);
             ImPlot::PopStyleColor();
 
             ImPlot::PushStyleColor(ImPlotCol_Fill, ctx.colors.bars2);
-            ImPlot::PlotBars("##barswr", round_write_thr_.data(), static_cast<int>(round_write_thr_.size()), 0.3, 0.45);
+            ImPlot::PlotBars("WR", round_write_thr_.data(), static_cast<int>(round_write_thr_.size()), 0.3, 0.45);
             ImPlot::PopStyleColor();
 
 

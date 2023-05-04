@@ -8,9 +8,9 @@
 // disk info context
 struct diskctx
 {
-    explicit diskctx(std::string nm) noexcept : name(std::move(nm)) {}
+    explicit diskctx(std::string dev) noexcept : devname(std::move(dev)) {}
 
-    const std::string name;
+    const std::string devname;
     ull size;
     unsigned int physical_sector_size;
     unsigned int logical_sector_size;

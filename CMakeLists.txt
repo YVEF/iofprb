@@ -9,7 +9,7 @@ add_definitions(-DDUMMY_TEST_ENGINE)
 set(VERBOSE)
 set(CMAKE_BUILD_TYPE Debug)
 add_compile_options(-Wall -Wextra -Wpedantic -O0 -g)
-add_link_options(-lblkid -ludev)
+add_link_options(-lblkid -ludev -luring)
 
 
 #include_directories(BEFORE /usr/src/linux/include/linux/)
@@ -26,7 +26,6 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 find_package(glfw3 3.3 REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(imgui CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux/share/imgui")
-find_package(ftxui CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux/share/ftxui")
 find_package(glad CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux/share/glad")
 find_package(implot CONFIG REQUIRED HINTS "${VCPKG_ROOT_PATH}/installed/x64-linux/share/implot")
 
@@ -50,7 +49,6 @@ add_executable(iofprb
         ${jobsrc})
 
 # linking libs
-target_link_libraries(iofprb PRIVATE ftxui::dom ftxui::screen ftxui::component)
 target_link_libraries(iofprb PRIVATE imgui::imgui)
 target_link_libraries(iofprb PRIVATE glad::glad)
 target_link_libraries(iofprb PRIVATE glfw)

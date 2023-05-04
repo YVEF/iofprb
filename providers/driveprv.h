@@ -9,6 +9,7 @@ namespace providers {
 struct disk_draw_info
 {
     std::string name;
+    std::string uuid;
     std::string description;
     const std::vector<partinfo*>* partitions;
 };

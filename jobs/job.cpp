@@ -1,5 +1,4 @@
 #include "job.h"
-#include "../providers/config_state.h"
 #include "test_job.h"
 #include <cassert>
 #include "syscalls_job.h"
@@ -7,21 +6,22 @@
 
 namespace jobs {
 
-job::job(const config_state& config) noexcept : config_(config) {}
+job::job(const config_state& config, const diskctx* disk) noexcept
+: config_(config), disk_(disk) {}
 
 void job::start()
 {
     job* this_ = this;
-//    std::thread t([this_]() { this_->start_(); });
+    this_->initialize_();
 
-    workers_.emplace_back([this_]() { this_->start_(); });
-
+    for(uint i=0; i<config_.get_threads(); i++)
+        workers_.emplace_back([this_]() { this_->start_(); });
 }
 
 
 void job::push_msg(jobs::job_msg msg) noexcept
 {
-    msgs_.push(msg);
+    msgs_.push(std::move(msg));
 }
 
 bool job::pull_msg(jobs::job_msg* msg) noexcept
@@ -34,9 +34,7 @@ bool job::pull_msg(jobs::job_msg* msg) noexcept
     return true;
 }
 
-
-
-job* initialize_job(const config_state& config) noexcept
+job* initialize_job(const config_state& config, const diskctx* disk) noexcept
 {
 #ifdef DUMMY_TEST_ENGINE
     assert(config.engine_id <= 2);
@@ -44,14 +42,14 @@ job* initialize_job(const config_state& config) noexcept
     assert(config.engine_id <= 1);
 #endif
 
-    switch (config.engines[config.engine_id].first)
+    switch (config.get_engine())
     {
         case engine::STRD:
-            return new syscalls_job(config);
+            return new syscalls_job(config, disk);
         case engine::AHCI:
             assert(false);
         case engine::TEST:
-            return new test_job(config);
+            return new test_job(config, disk);
     }
 
     assert(false);

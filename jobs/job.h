@@ -15,29 +15,44 @@ enum class measure_type
     WRITE
 };
 
+enum class msg_class
+{
+    REPORT,
+    ERR
+};
+
 struct job_msg
 {
     // read/write throughput
     double throughput;
     measure_type mtype;
-//    double write_thr;
+
+//    std::string error;
+//    msg_class msgclass;
+};
+
+struct errmsg
+{
+    std::string_view error;
 };
 
 class job
 {
 public:
-    explicit job(const config_state&) noexcept;
+    explicit job(const config_state&, const diskctx*) noexcept;
     void start();
 
-//    void register_notify(void(* callback)(const job_msg&)) noexcept;
     bool pull_msg(job_msg*) noexcept;
     virtual ~job() noexcept = default;
 
 protected:
     virtual void start_() = 0;
+    virtual void initialize_() {}
     void push_msg(job_msg) noexcept;
 
+
     const config_state& config_;
+    const diskctx* disk_;
 
 private:
     std::vector<void(*)(const job_msg&)> subs_;
@@ -45,7 +60,7 @@ private:
     std::queue<job_msg> msgs_;
 };
 
-job* initialize_job(const config_state& config) noexcept;
+job* initialize_job(const config_state&, const diskctx*) noexcept;
 
 
 } // job

@@ -7,11 +7,11 @@
 struct partinfo
 {
     explicit partinfo(std::string nm, bool is_log, bool is_prim) noexcept
-            : name(std::move(nm)), is_primary(is_prim), is_logical(is_log),
+            : devname(std::move(nm)), is_primary(is_prim), is_logical(is_log),
               size(0), flags(0), type(0)
     {}
 
-    std::string name;
+    std::string devname;
     bool is_primary;
     bool is_logical;
     unsigned int sector_cnt;
