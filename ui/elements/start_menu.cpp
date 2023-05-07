@@ -29,12 +29,13 @@ void start_menu::render(ui::render_context& ctx) noexcept
         }
 
         auto& conf = config_;
-        std::function<void(void)> notify_changed = [&conf](){ conf.to_default(); };
+        std::function<void(void)> notify_changed = [&conf](){ conf.reset_partition(); };
 
         ImGui::Custom::RenderCombo("##diskmenu", -1.f, &config_.disk_info_id,
                                    config_.disks_info,
                                    (std::function<std::string(int)>)
                                    [&disks](int i) { return disks[i].name; },
+                                   true,
                                    &notify_changed);
 
         ImGui::SameLine(0, ctx.standard_space);
@@ -142,7 +143,8 @@ void start_menu::render(ui::render_context& ctx) noexcept
             auto& threadsv = config_.threads;
             ImGui::Custom::RenderCombo("Threads", 45.f, &config_.threads_id, threadsv,
                                        (std::function<std::string(int)>)[&threadsv](int i)
-                                       { return std::to_string(threadsv[i]); });
+                                       { return std::to_string(threadsv[i]); },
+                                       false);
 
             ImGui::SameLine(0, ctx.standard_space);
             auto& accesstype = config_.access;

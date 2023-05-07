@@ -18,10 +18,17 @@ template<typename TEll, typename TStr>
 void RenderCombo(const char* name, float width, int* selected_item,
                  const std::vector<TEll>& collection,
                  const std::function<TStr(int)>& get_str,
+                 bool enabled = true,
                  const std::function<void(void)>* notify_changed = nullptr)
 {
     if(width != -1)
         ImGui::PushItemWidth(width);
+
+    if(!enabled)
+    {
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+    }
 
     if(ImGui::BeginCombo(name, get_str(*selected_item).data()))
     {
@@ -45,6 +52,12 @@ void RenderCombo(const char* name, float width, int* selected_item,
     }
     if(width != -1)
         ImGui::PopItemWidth();
+
+    if(!enabled)
+    {
+        ImGui::PopStyleVar();
+        ImGui::PopItemFlag();
+    }
 }
 
 bool RenderButton(const char* label, const ui::render_context& ctx, bool enabled = true);

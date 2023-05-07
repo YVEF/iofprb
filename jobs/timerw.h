@@ -2,6 +2,8 @@
 #define IOFPRB_TIMERW_H
 #include <chrono>
 #include "../utils/typedefs.h"
+#include <vector>
+
 
 namespace jobs {
 
@@ -13,23 +15,30 @@ public:
     inline void start() noexcept
     {
         start_tp_ = std::chrono::steady_clock::now();
+        is_running_ = true;
     }
 
     inline void stop() noexcept
     {
-        stop_tp_ = std::chrono::steady_clock::now();
-        elapsed_ = stop_tp_ - start_tp_;
+        if(!is_running_)
+            return;
+
+        auto stop = std::chrono::steady_clock::now();
+        elapsed_ += (stop - start_tp_);
+    }
+
+    inline void reset() noexcept
+    {
+        elapsed_ = std::chrono::nanoseconds(0);
     }
 
     long microseconds() const noexcept;
     long nanoseconds() const noexcept;
 
 private:
+    bool is_running_ = false;
     timepoint_t start_tp_;
-    timepoint_t stop_tp_;
-    decltype(stop_tp_ - start_tp_) elapsed_;
-
-
+    std::chrono::nanoseconds elapsed_{0};
 };
 
 } // jobs

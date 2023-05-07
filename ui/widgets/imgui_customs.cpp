@@ -32,7 +32,6 @@ float ProgressBar(float value, const float minValue, const float maxValue, const
 
 
 
-
 bool RenderButton(const char* label, const ui::render_context& ctx, bool enabled)
 {
     if(!enabled)

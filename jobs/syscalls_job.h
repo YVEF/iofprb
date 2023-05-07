@@ -23,7 +23,7 @@ private:
     uint buff_size_;
     uint queue_count_;
 
-    static void push_err(const char* errmsg);
+    static void raise_err(const char* errmsg);
 
 };
 

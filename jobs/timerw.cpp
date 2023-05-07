@@ -10,7 +10,7 @@ long timerw::microseconds() const noexcept
 
 long timerw::nanoseconds() const noexcept
 {
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed_).count();
+    return elapsed_.count();
 }
 
 } // jobs

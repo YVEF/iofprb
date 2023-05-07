@@ -102,6 +102,11 @@ struct config_state
         threads_id = 0;
     }
 
+    void reset_partition() noexcept
+    {
+        partition_id = 0;
+    }
+
     [[nodiscard]] uint get_iterations() const noexcept;
     [[nodiscard]] uint get_threads() const noexcept;
     [[nodiscard]] engine get_engine() const noexcept;

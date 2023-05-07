@@ -14,10 +14,16 @@
 #include <cstring>
 #include "timerw.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/sysmacros.h>
+#include <dirent.h>
+#include <libgen.h>
+
 
 namespace jobs {
 
-void syscalls_job::push_err(const char* errmsg)
+void syscalls_job::raise_err(const char* errmsg)
 {
     std::string error = errmsg;
     error += strerror(errno);
@@ -40,7 +46,7 @@ void syscalls_job::initialize_()
 
     fd_ = open(device_partition->devname.c_str(), O_RDWR | O_DIRECT | O_NOATIME);
     if (fd_ == -1)
-        push_err("Failed to open descriptor for the device");
+        raise_err("Failed to open descriptor for the device");
 
     queue_count_ = config_.get_block_size();
     uint block_size = config_.get_block_size();
@@ -55,17 +61,11 @@ void syscalls_job::initialize_()
     queue_count_ = block_size / buff_size_;
 }
 
-static inline
-void find_cqe_count(uint achunk, uint blok_size)
-{
-
-}
-
 void syscalls_job::start_()
 {
     struct io_uring ring;
     if (io_uring_queue_init(queue_count_, &ring, IORING_SETUP_SINGLE_ISSUER) < 0)
-        push_err("io_uring_queue_init failed");
+        raise_err("io_uring_queue_init failed");
 
     uint iters = config_.get_iterations();
     while(iters-- > 0)
@@ -89,49 +89,39 @@ void syscalls_job::start_()
         std::size_t num_blocks = config_.get_alloc_chunk() / read_butch;
 
         timerw timer;
-//        struct timespec start, end;
-//        clock_gettime(CLOCK_MONOTONIC, &start);
 
-        timer.start();
         for (std::size_t i = 0; i < num_blocks; i++)
         {
             off_t offset = i * read_butch;
 
             struct io_uring_sqe* sqe = io_uring_get_sqe(&ring);
             if (!sqe)
-                push_err("io_uring_get_sqe failed");
+                raise_err("io_uring_get_sqe failed");
 
+            timer.start();
             sqe->flags |= IOSQE_IO_DRAIN;
             io_uring_prep_readv(sqe, fd_, iov.get(), queue_count_, offset);
 
             if (io_uring_submit(&ring) < 0)
-                push_err("io_uring_submit failed");
+                raise_err("io_uring_submit failed");
 
             struct io_uring_cqe* cqe;
             if (io_uring_wait_cqe(&ring, &cqe) < 0)
-                push_err("io_uring_wait_cqe failed");
+                raise_err("io_uring_wait_cqe failed");
 
             if (cqe->res != read_butch)
-                push_err("read failed");
+                raise_err("read failed");
+
+            timer.stop();
             io_uring_cqe_seen(&ring, cqe);
         }
 
-//        clock_gettime(CLOCK_MONOTONIC, &end);
-        timer.stop();
         long micr = timer.nanoseconds();
+        timer.reset();
         double elapsed = static_cast<double>(micr)/1e9;
 
-//        double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
         double throughput = static_cast<double>(config_.get_alloc_chunk()) / elapsed / CNFG_1MG;
         push_msg(job_msg{throughput, measure_type::READ});
-//
-//
-////        fdatasync(fd);
-//
-//        for(std::size_t i=0; i<QUEUE_COUNT; i++)
-//            free(iov[i].iov_base);
-//
-//
     }
 
 //    close(fd_);
