@@ -8,8 +8,8 @@
 
 #define CNFG_ITERATION_COUNT_LIM 16
 #define CNFG_THREADS_CNT_LIM 19
-#define CNFG_1KB 1024
-#define CNFG_1MG 1048576
+#define CNFG_1KB 1024U
+#define CNFG_1MG 1048576U
 
 enum class access_strategy
 {

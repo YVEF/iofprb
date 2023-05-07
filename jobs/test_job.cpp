@@ -11,16 +11,18 @@ std::uniform_real_distribution<double> dist(30.f, 50.f);
 
 void test_job::start_()
 {
-    int a = 0;
     int i = config_.get_iterations();
-    while(true)
+    while(i-- > 0)
     {
-        auto mtype = (a / i) % 2 == 0 ?
-                measure_type::READ : measure_type::WRITE;
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        push_msg(job_msg{dist(engine), measure_type::READ});
+    }
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        push_msg(job_msg{dist(engine), mtype});
-        a++;
+    i = config_.get_iterations();
+    while(i-- > 0)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        push_msg(job_msg{dist(engine), measure_type::WRITE});
     }
 }
 
