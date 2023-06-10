@@ -2,6 +2,7 @@
 #include <random>
 #include <chrono>
 #include <cassert>
+#include <thread>
 
 namespace jobs {
 
@@ -11,6 +12,10 @@ std::uniform_real_distribution<double> dist(30.f, 50.f);
 
 void test_job::start_()
 {
+    update_phase("preparing");
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    update_phase("running");
+
     int i = config_.get_iterations();
     while(i-- > 0)
     {

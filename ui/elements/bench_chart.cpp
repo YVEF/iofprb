@@ -7,9 +7,23 @@
 
 namespace ui {
 
+static inline double update_min(double min, double max, const jobs::job_msg& msg, jobs::measure_type measure) noexcept
+{
+    return min == -1.0 ?
+          max :
+          msg.mtype == measure ?
+            std::min(min, msg.throughput) :
+            min;
+}
+
 int bench_chart::next() const noexcept
 {
     return goback ? -1 : 0;
+}
+
+void bench_chart::adjust() noexcept
+{
+    job_->start();
 }
 
 bench_chart::bench_chart(config_state& config, const providers::driveprv& drv) noexcept
@@ -20,9 +34,7 @@ bench_chart::bench_chart(config_state& config, const providers::driveprv& drv) n
     iterations_.push_back(0.0);
     round_read_thr_.push_back(0.0);
     round_write_thr_.push_back(0.0);
-
     job_ = jobs::initialize_job(config_, driverprv_.get_disk(config_.get_disk_uuid()));
-    job_->start();
 }
 
 void bench_chart::render(ui::render_context& ctx) noexcept
@@ -53,6 +65,12 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         ImGui::SameLine(0, ctx.standard_space);
         ImGui::Text("Disk: %s", config_.disks_info[config_.disk_info_id].name.c_str());
 
+        ImGui::GetColumnOffset();
+        ImGui::SameLine(0.0f, ctx.standard_space);
+        ImGui::Text("Phase: %s...", job_->phase());
+        ImGui::SameLine(0.0f, ctx.standard_space);
+        ImGui::Text("%c", "|/-\\"[(int)(ImGui::GetTime() / 0.1f) & 3]);
+
         if(is_pop)
             ImGui::OpenPopup("clrhist_popup");
 
@@ -76,32 +94,36 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         ImGui::End();
     }
 
-    uint iteration_count = config_.iterations[config_.iterations_id];
+    uint iteration_count = config_.get_iterations();
     jobs::job_msg msg{};
     if(job_->pull_msg(&msg))
     {
         c_iteration_++;
         auto& set = msg.mtype == jobs::measure_type::READ ? round_read_thr_ : round_write_thr_;
+
         if(c_iteration_ - 1 == iteration_count)
         {
             iterations_.clear();
+            iterations_.push_back(0.0);
             c_iteration_ = 0;
 
-            // fixme: switch rounds properly
-            // switch the round on second time
-            round_switch_++;
-            int switch_disable_idx = (round_switch_ % 2);
-            c_round_ = c_round_ + 1 - switch_disable_idx;
-            if(switch_disable_idx == 0)
-                set.emplace_back();
+//            round_switch_++;
+//            int switch_disable_idx = (round_switch_ % 2);
+//            c_round_ = c_round_ + 1 - switch_disable_idx;
+//            if(switch_disable_idx == 0)
+//                set.emplace_back();
         }
-
-        read_max_ = std::max(read_max_, msg.throughput);
-        read_min_ = read_min_ == -1.0 ? msg.throughput : std::min(read_min_, msg.throughput);
 
         iterations_.push_back(msg.throughput);
         double& total = set.back();
         total = std::max(total, msg.throughput);
+
+        // mins for axis
+        read_max_ = round_read_thr_.back();
+        write_max_ = round_write_thr_.back();
+
+        read_min_ = update_min(read_min_, read_max_, msg, jobs::measure_type::READ);
+        write_min_ = update_min(write_min_, write_max_, msg, jobs::measure_type::WRITE);
     }
 
     if(ImGui::Begin("##chart1", nullptr, blockflags_))
@@ -142,7 +164,10 @@ void bench_chart::render(ui::render_context& ctx) noexcept
 
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 2.f);
 
-        ImPlot::SetNextAxisLimits(ImAxis_Y1, std::min(read_min_, write_min_) - 0.8, std::max(read_max_, write_max_) + 1.2, ImPlotCond_Always);
+        ImPlot::SetNextAxisLimits(ImAxis_Y1, std::min(read_min_, write_min_) - 0.8,
+                                  std::max(round_read_thr_.back(), round_write_thr_.back()) + 1.2,
+                                  ImPlotCond_Always);
+
         ImPlot::SetNextAxisLimits(ImAxis_X1, 0, std::max(5, static_cast<int>(round_read_thr_.size() + 1)), ImPlotCond_Always);
 
         if (ImPlot::BeginPlot("##barplot", ImVec2(size.x-17, size.y-17), plotflags_ & ~ImPlotFlags_NoLegend))

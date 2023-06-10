@@ -37,7 +37,7 @@ struct config_state
     int iterations_id = 4;
     int alloc_chnk_id = 5;
     int threads_id = 0;
-    int disk_info_id = 0;
+    int disk_info_id = 1;
     int access_id = 0;
     int block_size_id = 6;
     int engine_id = 0;
@@ -93,7 +93,7 @@ struct config_state
 
     void to_default() noexcept
     {
-        engine_id = 0;
+        engine_id = 1;
         access_id = 0;
         block_size_id = 6;
         partition_id = 0;

@@ -21,7 +21,17 @@ void job::start()
 
 void job::push_msg(jobs::job_msg msg) noexcept
 {
-    msgs_.push(std::move(msg));
+    msgs_.push(msg);
+}
+
+const char* job::phase() const noexcept
+{
+    return phase_;
+}
+
+void job::update_phase(const char* new_phase) noexcept
+{
+    phase_ = new_phase;
 }
 
 bool job::pull_msg(jobs::job_msg* msg) noexcept

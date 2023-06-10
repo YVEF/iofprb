@@ -150,7 +150,8 @@ void start_menu::render(ui::render_context& ctx) noexcept
             auto& accesstype = config_.access;
             ImGui::Custom::RenderCombo("Access Type", 51.f, &config_.access_id, accesstype,
                                        (std::function<std::string_view(int)>)[&accesstype](int i)
-                                       { return accesstype[i].second; });
+                                       { return accesstype[i].second; },
+                                       false);
 
             ImGui::SameLine(0, ctx.standard_space);
             auto& blksize = config_.block_size;

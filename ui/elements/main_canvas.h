@@ -13,6 +13,7 @@ class main_canvas : public base_element
 {
 public:
     BASE_EL_REGULAR_OVERRIDE
+    void adjust() noexcept override;
     explicit main_canvas(config_state&, const providers::driveprv&) noexcept;
 
 private:
@@ -29,7 +30,9 @@ private:
     template<typename T>
     static std::unique_ptr<nextback_canvas> get_next_canvas_(config_state& config, const providers::driveprv& drv)
     {
-        return std::make_unique<T>(config, drv);
+        auto canvas = std::make_unique<T>(config, drv);
+
+        return canvas;
     }
 };
 

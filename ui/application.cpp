@@ -83,6 +83,8 @@ bool application::init() noexcept
 
     elements_.emplace_back(std::make_shared<topmenu>());
     elements_.emplace_back(std::make_shared<main_canvas>(config_, driveprv_));
+    for(const auto& el : elements_)
+        el->adjust();
 
     return false;
 }

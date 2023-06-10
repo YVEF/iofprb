@@ -43,13 +43,16 @@ public:
     void start();
 
     bool pull_msg(job_msg*) noexcept;
+    virtual const char* phase() const noexcept;
+
     virtual ~job() noexcept = default;
+
 
 protected:
     virtual void start_() = 0;
     virtual void initialize_() {}
     void push_msg(job_msg) noexcept;
-
+    void update_phase(const char* new_phase) noexcept;
 
     const config_state& config_;
     const diskctx* disk_;
@@ -58,6 +61,7 @@ private:
     std::vector<void(*)(const job_msg&)> subs_;
     std::vector<std::thread> workers_;
     std::queue<job_msg> msgs_;
+    const char* phase_ = "-/-";
 };
 
 job* initialize_job(const config_state&, const diskctx*) noexcept;

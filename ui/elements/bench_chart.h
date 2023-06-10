@@ -11,6 +11,7 @@ class bench_chart : public nextback_canvas
 public:
     NB_CANV_REGULAR_OVERRIDE
     BASE_EL_REGULAR_OVERRIDE
+    void adjust() noexcept override;
 
     explicit bench_chart(config_state&, const providers::driveprv&) noexcept;
     ~bench_chart() noexcept override;

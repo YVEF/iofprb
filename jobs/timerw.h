@@ -10,7 +10,6 @@ namespace jobs {
 using timepoint_t = std::chrono::time_point<std::chrono::steady_clock>;
 class timerw
 {
-
 public:
     inline void start() noexcept
     {
@@ -30,6 +29,13 @@ public:
     inline void reset() noexcept
     {
         elapsed_ = std::chrono::nanoseconds(0);
+    }
+
+    void initialize() noexcept
+    {
+        start();
+        stop();
+        reset();
     }
 
     long microseconds() const noexcept;
