@@ -11,11 +11,12 @@ class syscalls_job : public job
 {
 public:
     explicit syscalls_job(const config_state&, const diskctx*) noexcept;
+    ~syscalls_job() noexcept override;
 
 protected:
     void start_() override;
     void initialize_() override;
-    ~syscalls_job() noexcept override;
+
 
 private:
     int fd_ = 0;

@@ -4,6 +4,17 @@
 #include <implot.h>
 #include <algorithm>
 #include "../widgets/imgui_customs.h"
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <csignal>
+#include <sys/mman.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
+#include <iostream>
+
+#define STACK_2M (1024*1024*2)
 
 namespace ui {
 
@@ -21,20 +32,35 @@ int bench_chart::next() const noexcept
     return goback ? -1 : 0;
 }
 
-void bench_chart::adjust() noexcept
+static int fork_fnc(void* args)
 {
-    job_->start();
+    auto jb = static_cast<jobs::job*>(args);
+    jb->start();
+    while(jb->is_running.load(std::memory_order_acquire)) sleep(2);
+
+    return 0;
 }
 
-bench_chart::bench_chart(config_state& config, const providers::driveprv& drv) noexcept
-: config_(config), goback(false), was_stopped_(false), c_iteration_(0), c_round_(1),
+void bench_chart::adjust() noexcept
+{
+    child_stack_ = static_cast<char*>(malloc(STACK_2M * sizeof(uint8_t)));
+    assert(child_stack_);
+    child_pid_ = clone(fork_fnc, child_stack_ + STACK_2M, CLONE_VM | SIGCHLD, job_.get());
+    assert(child_pid_ != -1);
+}
+
+
+bench_chart::bench_chart(config_state& config, const ambient::driveprv& drv) noexcept
+: config_(config), goback(false), was_stopped_(false), stop_requtested_(false), c_iteration_(0), c_round_(1),
     read_max_(0.0), read_min_(-1.0), write_max_(0.0), write_min_(-1.0), round_switch_(0),
     driverprv_(drv)
 {
     iterations_.push_back(0.0);
     round_read_thr_.push_back(0.0);
     round_write_thr_.push_back(0.0);
-    job_ = jobs::initialize_job(config_, driverprv_.get_disk(config_.get_disk_uuid()));
+    job_ = jobs::allocate_job(config_, driverprv_.get_disk(config_.get_disk_uuid()));
+    // !!! temp
+    hist_ = std::make_unique<ambient::hist>("/home/iaroslav/CLionProjects");
 }
 
 void bench_chart::render(ui::render_context& ctx) noexcept
@@ -54,12 +80,20 @@ void bench_chart::render(ui::render_context& ctx) noexcept
             goback = true;
 
         ImGui::SameLine();
-        if(ImGui::Custom::RenderButton("Stop", ctx, !was_stopped_))
-            was_stopped_ = true;
-
+        if(ImGui::Custom::RenderButton("Stop", ctx, !stop_requtested_))
+        {
+            stop_requtested_ = true;
+            job_->stop();
+        }
+        if(stop_requtested_ && !was_stopped_)
+        {
+            was_stopped_ = !job_->is_running.load(std::memory_order_acquire);
+            if(was_stopped_)
+                iterations_.clear();
+        }
 
         ImGui::SameLine();
-        if(ImGui::Custom::RenderButton("Clear History", ctx))
+        if(ImGui::Custom::RenderButton("Clear History", ctx, was_stopped_))
             is_pop = true;
 
         ImGui::SameLine(0, ctx.standard_space);
@@ -67,16 +101,18 @@ void bench_chart::render(ui::render_context& ctx) noexcept
 
         ImGui::GetColumnOffset();
         ImGui::SameLine(0.0f, ctx.standard_space);
-        ImGui::Text("Phase: %s...", job_->phase());
+        if(!was_stopped_) ImGui::Text("Phase: %s...", job_->phase());
         ImGui::SameLine(0.0f, ctx.standard_space);
-        ImGui::Text("%c", "|/-\\"[(int)(ImGui::GetTime() / 0.1f) & 3]);
+
+        // loader
+        if(!was_stopped_) ImGui::Custom::RenderFancyLoader();
 
         if(is_pop)
             ImGui::OpenPopup("clrhist_popup");
 
         if(ImGui::BeginPopupModal("clrhist_popup", nullptr, blockflags_))
         {
-            ImGui::Text("Delete the entire history file? (.iofprbhist)");
+            ImGui::Text("Delete the entire history file? (%s)", hist_->file_name.c_str());
             ImGui::NewLine();
             bool ok = ImGui::Button("OK");
             ImGui::SameLine();
@@ -174,28 +210,30 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         {
             ImPlot::SetupAxes("Rounds", "Throughtput", ImPlotAxisFlags_NoHighlight, ImPlotAxisFlags_NoHighlight);
             ImPlot::PushStyleColor(ImPlotCol_Fill, ctx.colors.bars1);
-            ImPlot::PlotBars("RD", round_read_thr_.data(), static_cast<int>(round_read_thr_.size()), 0.3, 0.15);
+            ImPlot::PlotBars("RD", round_read_thr_.data(), static_cast<int>(round_read_thr_.size()), 0.5, 0.25);
             ImPlot::PopStyleColor();
 
             ImPlot::PushStyleColor(ImPlotCol_Fill, ctx.colors.bars2);
-            ImPlot::PlotBars("WR", round_write_thr_.data(), static_cast<int>(round_write_thr_.size()), 0.3, 0.45);
+            ImPlot::PlotBars("WR", round_write_thr_.data(), static_cast<int>(round_write_thr_.size()), 0.5, 0.75);
             ImPlot::PopStyleColor();
-
-
 
             ImPlot::EndPlot();
         }
 
         ImPlot::PopStyleVar();
-
         ImGui::End();
     }
 }
 
-
 bench_chart::~bench_chart() noexcept
 {
-    delete job_;
+    job_->stop();
+
+    int wait_factor = 10;
+    int res = 0;
+    while(wait_factor-- > 0 && (res = waitpid(child_pid_, nullptr, WNOHANG)) == 0) sleep(1);
+    if(res != -1) kill(child_pid_, SIGINT);
+    free(child_stack_);
 }
 
 } // ui

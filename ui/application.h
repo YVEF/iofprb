@@ -17,7 +17,7 @@
 #include <memory>
 #include "elements/base_element.h"
 #include "st_color.h"
-#include "../providers/driveprv.h"
+#include "../ambient/driveprv.h"
 
 
 namespace ui {
@@ -388,7 +388,7 @@ static inline void FramePresent(ImGui_ImplVulkanH_Window* wd)
 class application
 {
 public:
-    explicit application(providers::driveprv& drv) noexcept : config_(drv.get_drives_info()), driveprv_(drv)
+    explicit application(ambient::driveprv& drv) noexcept : config_(drv.get_drives_info()), driveprv_(drv)
     {
 
     }
@@ -404,7 +404,7 @@ private:
     config_state config_;
 
     std::vector<std::shared_ptr<base_element>> elements_;
-    const providers::driveprv& driveprv_;
+    const ambient::driveprv& driveprv_;
 
     bool init_vulkan();
     bool init_imgui();

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <sstream>
 
-namespace providers {
+namespace ambient {
 
 static disk_draw_info build_disk_info(const diskctx* disk)
 {

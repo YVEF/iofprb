@@ -1,7 +1,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "ui/application.h"
-#include "providers/driveprv.h"
+#include "ambient/driveprv.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -85,7 +85,7 @@ int main()
     // move sorting to diskprv
     std::sort(disks.begin(), disks.end(),
               [](const diskctx* d1, const diskctx* d2) { return d1->partitions.size() < d2->partitions.size(); });
-    providers::driveprv drives(disks);
+    ambient::driveprv drives(disks);
 
 
     ui::application app(drives);

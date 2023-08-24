@@ -18,13 +18,29 @@
 #define MAX_ENTROPY_LENGTH_ARG 256
 
 namespace jobs {
+#define TMP_FILE_NAME_LEN 10
+static inline
+std::string get_tmp_file_name()
+{
+    static const char alphanum[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+
+    std::string res; res.reserve(TMP_FILE_NAME_LEN);
+
+    for (int i = 0; i < TMP_FILE_NAME_LEN; ++i)
+        res += alphanum[rand() % (sizeof(alphanum) - 1)];
+
+    return res;
+}
 
 syscalls_job::syscalls_job(const config_state& config, const diskctx* disk) noexcept
 : job(config, disk)
 {
     device_partition_ = disk_->partitions[config_.partition_id];
     mapping_dir_ = device_partition_->mntroot + "/iofprb";
-    mapping_file_ = mapping_dir_ + "/reserved.tmp";
+    mapping_file_ = mapping_dir_ + "/" + get_tmp_file_name();
 }
 
 void syscalls_job::raise_err(const char* errmsg)
@@ -42,6 +58,7 @@ syscalls_job::~syscalls_job() noexcept
         close(fd_);
         fd_ = 0;
     }
+    rmdir(mapping_dir_.c_str());
 }
 
 static int fill_random(char* buff, uint size)
@@ -91,6 +108,8 @@ double syscalls_job::emit_requests(const std::shared_ptr<struct iovec>& iov,
                                    __s32 butch_size,
                                    io_uring_prev_reqv_t prev_req)
 {
+    terminate_if_requested();
+
     timerw timer;
     timer.initialize();
 
@@ -161,6 +180,8 @@ void syscalls_job::start_()
 
     uint iters = config_.get_iterations();
     {
+        terminate_if_requested();
+
         // === reading
         update_phase("prepare reading task");
         // iover raii
@@ -190,6 +211,8 @@ void syscalls_job::start_()
     }
 
     {
+        terminate_if_requested();
+
         // === writing
         iters = config_.get_iterations();
         update_phase("prepare writing task");

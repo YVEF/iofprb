@@ -19,14 +19,16 @@ void test_job::start_()
     int i = config_.get_iterations();
     while(i-- > 0)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        terminate_if_requested();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         push_msg(job_msg{dist(engine), measure_type::READ});
     }
 
     i = config_.get_iterations();
     while(i-- > 0)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        terminate_if_requested();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         push_msg(job_msg{dist(engine), measure_type::WRITE});
     }
 }

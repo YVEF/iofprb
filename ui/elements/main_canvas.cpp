@@ -16,7 +16,7 @@ void main_canvas::render(ui::render_context& ctx) noexcept
     c_canvas_->render(ctx);
 }
 
-main_canvas::main_canvas(config_state& config, const providers::driveprv& driveprv) noexcept
+main_canvas::main_canvas(config_state& config, const ambient::driveprv& driveprv) noexcept
 : config_(config), c_step_(0), driveprv_(driveprv)
 {
     c_canvas_ = steps_[c_step_](config_, driveprv_);

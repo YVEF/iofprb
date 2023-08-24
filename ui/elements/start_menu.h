@@ -3,7 +3,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "nextback_canvas.h"
-#include "../../providers/config_state.h"
+#include "../../ambient/config_state.h"
 
 
 namespace ui {
@@ -14,7 +14,7 @@ public:
     BASE_EL_REGULAR_OVERRIDE
     NB_CANV_REGULAR_OVERRIDE
 
-    explicit start_menu(config_state& config, const providers::driveprv&) noexcept
+    explicit start_menu(config_state& config, const ambient::driveprv&) noexcept
     : config_(config)
     {
 

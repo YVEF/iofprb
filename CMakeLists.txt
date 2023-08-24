@@ -35,7 +35,7 @@ file(GLOB_RECURSE utilssrc utils/*.cpp)
 file(GLOB_RECURSE uisrc ui/*.cpp)
 file(GLOB_RECURSE disksrc disk/*.cpp)
 file(GLOB_RECURSE fssrc fs/*.cpp)
-file(GLOB_RECURSE prvsrc providers/*.cpp)
+file(GLOB_RECURSE prvsrc ambient/*.cpp)
 file(GLOB_RECURSE jobsrc jobs/*.cpp)
 
 # executable

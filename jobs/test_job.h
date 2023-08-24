@@ -8,8 +8,8 @@ namespace jobs {
 class test_job : public job
 {
 public:
-    explicit test_job(const config_state& config, const diskctx* disk) noexcept :
-    job(config, disk) {}
+    explicit test_job(const config_state& config, const diskctx* disk) noexcept
+    : job(config, disk) {}
 
 protected:
     void start_() override;

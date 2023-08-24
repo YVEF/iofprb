@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include "../disk/diskctx.h"
 
-namespace providers {
+namespace ambient {
 
 struct disk_draw_info
 {

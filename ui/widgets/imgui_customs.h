@@ -62,7 +62,14 @@ void RenderCombo(const char* name, float width, int* selected_item,
 
 bool RenderButton(const char* label, const ui::render_context& ctx, bool enabled = true);
 
+inline void RenderFancyLoader()
+{
+    ImGui::Text("%c", "|/-\\"[(int)(ImGui::GetTime() / 0.1f) & 3]);
 }
+
+}
+
+
 
 
 #endif //IOFPRB_IMGUI_CUSTOMS_H

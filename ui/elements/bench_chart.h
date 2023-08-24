@@ -2,6 +2,7 @@
 #define IOFPRB_BENCH_PROCESS_H
 #include "nextback_canvas.h"
 #include "../../jobs/job.h"
+#include "../../ambient/hist.h"
 #include <implot.h>
 
 namespace ui {
@@ -13,14 +14,16 @@ public:
     BASE_EL_REGULAR_OVERRIDE
     void adjust() noexcept override;
 
-    explicit bench_chart(config_state&, const providers::driveprv&) noexcept;
+    explicit bench_chart(config_state&, const ambient::driveprv&) noexcept;
     ~bench_chart() noexcept override;
 
 private:
-    jobs::job* job_;
+    std::shared_ptr<jobs::job> job_;
+    std::unique_ptr<ambient::hist> hist_;
     config_state& config_;
     bool goback;
     bool was_stopped_;
+    bool stop_requtested_;
     uint c_iteration_;
     uint c_round_;
     double read_max_;
@@ -28,7 +31,12 @@ private:
     double write_max_;
     double write_min_;
     int round_switch_;
-    const providers::driveprv& driverprv_;
+    const ambient::driveprv& driverprv_;
+
+    int child_pid_;
+    char* child_stack_;
+
+
 
     // read/write reports
     std::vector<double> iterations_;
@@ -43,6 +51,8 @@ private:
     ImPlotFlags plotflags_ = ImPlotFlags_NoLegend | ImPlotFlags_NoFrame
                       | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoMouseText
                       | ImPlotFlags_NoMenus;
+
+
 };
 
 } // ui

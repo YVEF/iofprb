@@ -1,7 +1,7 @@
 #ifndef IOFPRB_CONFIG_STATE_H
 #define IOFPRB_CONFIG_STATE_H
 
-#include "../providers/driveprv.h"
+#include "../ambient/driveprv.h"
 #include "../utils/typedefs.h"
 #include <vector>
 #include <string>
@@ -20,7 +20,7 @@ enum class access_strategy
 enum class engine
 {
     STRD,
-    AHCI
+    KMOD
 
 #ifdef DUMMY_TEST_ENGINE
     ,TEST
@@ -74,14 +74,14 @@ struct config_state
             std::make_pair(engine::TEST, "dummy"),
 #endif
             std::make_pair(engine::STRD, "syscalls"),
-            std::make_pair(engine::AHCI, "AHCI driver")
+            std::make_pair(engine::KMOD, "kmodule")
     };
 
     std::vector<uint> iterations;
     std::vector<uint> threads;
-    std::vector<providers::disk_draw_info> disks_info;
+    std::vector<ambient::disk_draw_info> disks_info;
 
-    explicit config_state(std::vector<providers::disk_draw_info> disksinfo) noexcept
+    explicit config_state(std::vector<ambient::disk_draw_info> disksinfo) noexcept
             : disks_info(std::move(disksinfo))
     {
         for(uint i=1; i < CNFG_ITERATION_COUNT_LIM; i++)
@@ -91,16 +91,16 @@ struct config_state
             threads.push_back(i);
     }
 
-    void to_default() noexcept
-    {
-        engine_id = 1;
-        access_id = 0;
-        block_size_id = 6;
-        partition_id = 0;
-        iterations_id = 4;
-        alloc_chnk_id = 5;
-        threads_id = 0;
-    }
+//    void to_default() noexcept
+//    {
+//        engine_id = 1;
+//        access_id = 0;
+//        block_size_id = 6;
+//        partition_id = 0;
+//        iterations_id = 4;
+//        alloc_chnk_id = 5;
+//        threads_id = 0;
+//    }
 
     void reset_partition() noexcept
     {
