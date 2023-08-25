@@ -14,16 +14,16 @@ typedef std::pair<read_thr_t, write_thr_t> hist_t;
 class hist
 {
 public:
-    explicit hist(const std::string& base_path) noexcept
-    : file_name(".iofprbhist"), base_path_(base_path) {}
+    explicit hist(std::string base_path) noexcept
+    : file_name(".iofprbhist"), base_path_(std::move(base_path)) {}
 
     void clear();
     hist_t load();
-    void save(const hist_t&);
+    void save(const ambient::read_thr_t& rd_data, const ambient::write_thr_t& wr_data);
     const std::string file_name;
 
 private:
-    const std::string& base_path_;
+    std::string base_path_;
 
 };
 

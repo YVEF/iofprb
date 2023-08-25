@@ -30,11 +30,11 @@ private:
     double read_min_;
     double write_max_;
     double write_min_;
-    int round_switch_;
     const ambient::driveprv& driverprv_;
+    std::future<void> job_terminating_;
 
-    int child_pid_;
-    char* child_stack_;
+//    int child_pid_;
+//    char* child_stack_;
 
 
 

@@ -4,14 +4,6 @@
 #include <implot.h>
 #include <algorithm>
 #include "../widgets/imgui_customs.h"
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <csignal>
-#include <sys/mman.h>
-#include <cstdlib>
-#include <cstdio>
-#include <cassert>
 #include <iostream>
 
 #define STACK_2M (1024*1024*2)
@@ -32,28 +24,14 @@ int bench_chart::next() const noexcept
     return goback ? -1 : 0;
 }
 
-static int fork_fnc(void* args)
-{
-    auto jb = static_cast<jobs::job*>(args);
-    jb->start();
-    while(jb->is_running.load(std::memory_order_acquire)) sleep(2);
-
-    return 0;
-}
-
 void bench_chart::adjust() noexcept
 {
-    child_stack_ = static_cast<char*>(malloc(STACK_2M * sizeof(uint8_t)));
-    assert(child_stack_);
-    child_pid_ = clone(fork_fnc, child_stack_ + STACK_2M, CLONE_VM | SIGCHLD, job_.get());
-    assert(child_pid_ != -1);
+    job_->start();
 }
-
 
 bench_chart::bench_chart(config_state& config, const ambient::driveprv& drv) noexcept
 : config_(config), goback(false), was_stopped_(false), stop_requtested_(false), c_iteration_(0), c_round_(1),
-    read_max_(0.0), read_min_(-1.0), write_max_(0.0), write_min_(-1.0), round_switch_(0),
-    driverprv_(drv)
+    read_max_(0.0), read_min_(-1.0), write_max_(0.0), write_min_(-1.0), driverprv_(drv)
 {
     iterations_.push_back(0.0);
     round_read_thr_.push_back(0.0);
@@ -83,13 +61,16 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         if(ImGui::Custom::RenderButton("Stop", ctx, !stop_requtested_))
         {
             stop_requtested_ = true;
-            job_->stop();
+            job_terminating_ = job_->stop();
         }
         if(stop_requtested_ && !was_stopped_)
         {
             was_stopped_ = !job_->is_running.load(std::memory_order_acquire);
             if(was_stopped_)
+            {
                 iterations_.clear();
+//                hist_->save(round_read_thr_, round_write_thr_);
+            }
         }
 
         ImGui::SameLine();
@@ -142,12 +123,6 @@ void bench_chart::render(ui::render_context& ctx) noexcept
             iterations_.clear();
             iterations_.push_back(0.0);
             c_iteration_ = 0;
-
-//            round_switch_++;
-//            int switch_disable_idx = (round_switch_ % 2);
-//            c_round_ = c_round_ + 1 - switch_disable_idx;
-//            if(switch_disable_idx == 0)
-//                set.emplace_back();
         }
 
         iterations_.push_back(msg.throughput);
@@ -186,7 +161,6 @@ void bench_chart::render(ui::render_context& ctx) noexcept
             ImPlot::PopStyleVar(2);
             ImPlot::EndPlot();
         }
-
         ImGui::End();
     }
 
@@ -227,13 +201,10 @@ void bench_chart::render(ui::render_context& ctx) noexcept
 
 bench_chart::~bench_chart() noexcept
 {
-    job_->stop();
-
-    int wait_factor = 10;
-    int res = 0;
-    while(wait_factor-- > 0 && (res = waitpid(child_pid_, nullptr, WNOHANG)) == 0) sleep(1);
-    if(res != -1) kill(child_pid_, SIGINT);
-    free(child_stack_);
+    std::cout << "~bench_chart" << std::endl;
+    auto future = job_->stop();
+    if(future.valid()) future.get();
+    std::cout << "~bench_chart end" << std::endl;
 }
 
 } // ui

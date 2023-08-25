@@ -2,12 +2,8 @@
 #include "test_job.h"
 #include <cassert>
 #include "syscalls_job.h"
-#include <functional>
 #include <memory>
-#include <thread>
 #include <iostream>
-
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <csignal>
@@ -15,19 +11,38 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cassert>
+#include <chrono>
 
 namespace jobs {
+
+#define STACK_2M (1024*1024*2)
 
 job::job(const config_state& config, const diskctx* disk) noexcept
 : config_(config), disk_(disk) {}
 
+
+static int job_fork_proc_fnc(void* args)
+{
+    auto transit = static_cast<job_transit*>(args);
+    transit->start();
+    while(transit->jb->is_running.load(std::memory_order_acquire)) sleep(2);
+    return 0;
+}
+
+job::~job() noexcept
+{
+    auto ft = stop();
+    if(ft.valid()) ft.get();
+    delete transit_;
+}
+
 void job::start()
 {
-    job* this_ = this;
-    this_->initialize_();
-    is_running = true;
-    for(uint i=0; i<config_.get_threads(); i++)
-        workers_.emplace_back([this_]() { this_->start_(); });
+    child_stack_ = static_cast<char*>(malloc(STACK_2M * sizeof(uint8_t)));
+    assert(child_stack_);
+    transit_ = new job_transit(this);
+    child_pid_ = clone(job_fork_proc_fnc, child_stack_ + STACK_2M, CLONE_VM | SIGCHLD, transit_);
+    assert(child_pid_ != -1);
 }
 
 void job::terminate_if_requested() const noexcept
@@ -36,17 +51,30 @@ void job::terminate_if_requested() const noexcept
         std::terminate();
 }
 
-void job::stop()
+std::future<void> job::stop()
 {
-    if(!is_running) return;
+    if(!is_running.load(std::memory_order_acquire))
+        return std::future<void>{};
+
     update_phase("Stopping");
     stop_by_termination.store(true, std::memory_order_release);
-
-    stopping_task_ = std::async(std::launch::async, [this](){
-        for(auto& w : workers_)
-            w.join();
-
-        is_running.store(false, std::memory_order_release);
+    return std::async(std::launch::async,
+                      [ch_pid = child_pid_,
+                       ch_st = child_stack_,
+                       &isrun = is_running,
+                       &workers = workers_](){
+        try
+        {
+            auto workers_joining = std::async([&workers](){
+                for(auto& w : workers)
+                    w.join();
+            });
+            workers_joining.wait_for(std::chrono::seconds(10));
+            if(waitpid(ch_pid, nullptr, WNOHANG) != -1) kill(ch_pid, SIGINT);
+        }
+        catch(...) {}
+        free(ch_st);
+        isrun.store(false, std::memory_order_release);
     });
 }
 
