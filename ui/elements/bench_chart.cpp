@@ -69,7 +69,7 @@ void bench_chart::render(ui::render_context& ctx) noexcept
             if(was_stopped_)
             {
                 iterations_.clear();
-//                hist_->save(round_read_thr_, round_write_thr_);
+                hist_->save(round_read_thr_, round_write_thr_);
             }
         }
 
@@ -98,6 +98,8 @@ void bench_chart::render(ui::render_context& ctx) noexcept
             bool ok = ImGui::Button("OK");
             ImGui::SameLine();
             bool discard = ImGui::Button("Discard");
+            if(ok)
+                hist_->clear();
             if (ok || discard)
                 ImGui::CloseCurrentPopup();
 

@@ -27,7 +27,7 @@ private:
                               | ImGuiWindowFlags_NoScrollbar
                               | ImGuiWindowFlags_NoSavedSettings;
 
-    bool is_run_pressed = false;
+    bool is_run_pressed_ = false;
     config_state& config_;
 };
 

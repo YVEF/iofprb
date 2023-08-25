@@ -25,8 +25,6 @@ public:
 
     [[nodiscard]] ImVec2 get_offset() const noexcept { return offset_; }
 
-    bool bench_running = false;
-
 private:
     ImVec2 offset_;
 };

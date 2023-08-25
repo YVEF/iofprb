@@ -13,14 +13,14 @@ namespace ambient {
 
 void hist::clear()
 {
-    std::string full_name = base_path_ + file_name;
+    std::string full_name = base_path_ + "/" + file_name;
     int fd = open(full_name.c_str(), O_TRUNC);
-    close(fd);
+    if(fd != -1) close(fd);
 }
 
 hist_t hist::load()
 {
-    std::string full_name = base_path_ + file_name;
+    std::string full_name = base_path_ + "/" + file_name;
     int fd = open(full_name.c_str(), O_RDONLY);
     if(fd == -1)
         return hist_t{};
@@ -52,7 +52,9 @@ void hist::save(const ambient::read_thr_t& rd_data, const ambient::write_thr_t& 
            || rd_data.size() == wr_data.size() + 1);
 
     std::string full_name = base_path_ + "/" + file_name;
-    int fd = open(full_name.c_str(), O_RDWR | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+    int fd = open(full_name.c_str(),
+                  O_RDWR | O_CREAT | O_APPEND,
+                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
     if(fd == -1) return;
 
     char buf[HIST_BUF_SIZE];
@@ -60,7 +62,7 @@ void hist::save(const ambient::read_thr_t& rd_data, const ambient::write_thr_t& 
     size_t total = 0;
     for(size_t i=0; i<rd_data.size(); i++)
     {
-        int r = sprintf(bufp, HIST_DATA_FORMAT, rd_data[i], wr_data[i]);
+        int r = sprintf(bufp, HIST_DATA_FORMAT, rd_data[i], (i >= wr_data.size()) ? 0.0 : wr_data[i]);
         bufp += r;
         total += r;
     }

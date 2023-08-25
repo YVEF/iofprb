@@ -5,12 +5,9 @@
 
 namespace ui {
 
-//start_menu::start_menu(config_state& config) noexcept : config_(config)
-//{}
-
 int start_menu::next() const noexcept
 {
-    if(is_run_pressed)
+    if(is_run_pressed_)
         return 1;
 
     return 0;
@@ -41,7 +38,7 @@ void start_menu::render(ui::render_context& ctx) noexcept
         ImGui::SameLine(0, ctx.standard_space);
 
         if(ImGui::Custom::RenderButton("Run", ctx))
-            is_run_pressed = true;
+            is_run_pressed_ = true;
 
         const std::string& description = config_.disks_info[config_.disk_info_id].description;
 
@@ -165,6 +162,12 @@ void start_menu::render(ui::render_context& ctx) noexcept
                                        (std::function<std::string_view(int)>)
                                                [&prec](int i) { return prec[i].second; });
 
+            ImGui::EndChild();
+        }
+
+        if(ImGui::BeginChild("tune", ImVec2(ImGui::GetContentRegionAvail().x, 35), true))
+        {
+            ImGui::Checkbox("Preserve History", &config_.preserve_history);
             ImGui::EndChild();
         }
 

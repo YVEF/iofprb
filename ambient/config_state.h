@@ -80,6 +80,7 @@ struct config_state
     std::vector<uint> iterations;
     std::vector<uint> threads;
     std::vector<ambient::disk_draw_info> disks_info;
+    bool preserve_history = true;
 
     explicit config_state(std::vector<ambient::disk_draw_info> disksinfo) noexcept
             : disks_info(std::move(disksinfo))
@@ -90,17 +91,6 @@ struct config_state
         for(int i=1; i < CNFG_THREADS_CNT_LIM; i++)
             threads.push_back(i);
     }
-
-//    void to_default() noexcept
-//    {
-//        engine_id = 1;
-//        access_id = 0;
-//        block_size_id = 6;
-//        partition_id = 0;
-//        iterations_id = 4;
-//        alloc_chnk_id = 5;
-//        threads_id = 0;
-//    }
 
     void reset_partition() noexcept
     {
