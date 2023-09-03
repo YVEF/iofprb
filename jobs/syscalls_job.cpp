@@ -14,26 +14,12 @@
 #include <filesystem>
 #include <cassert>
 #include "timerw.h"
+#include "../utils/hlp.h"
 
 #define MAX_ENTROPY_LENGTH_ARG 256
 
 namespace jobs {
-#define TMP_FILE_NAME_LEN 10
-static inline
-std::string get_tmp_file_name()
-{
-    static const char alphanum[] =
-            "0123456789"
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            "abcdefghijklmnopqrstuvwxyz";
 
-    std::string res; res.reserve(TMP_FILE_NAME_LEN);
-
-    for (int i = 0; i < TMP_FILE_NAME_LEN; ++i)
-        res += alphanum[rand() % (sizeof(alphanum) - 1)];
-
-    return res;
-}
 
 syscalls_job::syscalls_job(const config_state& config, const diskctx* disk) noexcept
 : job(config, disk)

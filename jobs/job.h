@@ -28,11 +28,6 @@ struct job_msg
     measure_type mtype;
 };
 
-struct errmsg
-{
-    std::string_view error;
-};
-
 struct job_transit;
 
 class job
@@ -75,25 +70,16 @@ private:
 
 std::shared_ptr<job> allocate_job(const config_state&, const diskctx*) noexcept;
 
+/*
+ * job transiction to child process
+ */
 struct job_transit
 {
     explicit job_transit(job* j) noexcept : jb(j) {}
-
+    void start();
+    // do not free the pointer memory,
+    // because the class is not an owner of the job
     job* jb;
-    void start()
-    {
-        jb->initialize_();
-        jb->is_running.store(true, std::memory_order_release);
-        for(uint i=0; i<jb->config_.get_threads(); i++)
-            jb->workers_.emplace_back([this]() { jb->start_(); });
-
-        jb->ending_future_ = std::async(std::launch::async, [this](){
-            for(auto& w : jb->workers_)
-                w.join();
-
-            jb->is_running.store(false, std::memory_order_release);
-        });
-    }
 };
 
 } // job

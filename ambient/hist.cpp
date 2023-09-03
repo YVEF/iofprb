@@ -23,7 +23,7 @@ hist_t hist::load()
     std::string full_name = base_path_ + "/" + file_name;
     int fd = open(full_name.c_str(), O_RDONLY);
     if(fd == -1)
-        return hist_t{};
+        return hist_t{read_thr_t(1, 0.0), write_thr_t(1, 0.0)};
 
     char buf[HIST_BUF_SIZE];
     int total = read(fd, buf, HIST_BUF_SIZE);
@@ -43,7 +43,7 @@ hist_t hist::load()
     }
     close(fd);
 
-    return std::make_pair(rd, wr);
+    return hist_t{rd, wr};
 }
 
 void hist::save(const ambient::read_thr_t& rd_data, const ambient::write_thr_t& wr_data)
@@ -59,8 +59,8 @@ void hist::save(const ambient::read_thr_t& rd_data, const ambient::write_thr_t& 
 
     char buf[HIST_BUF_SIZE];
     char* bufp = buf;
-    size_t total = 0;
-    for(size_t i=0; i<rd_data.size(); i++)
+    std::size_t total = 0;
+    for(std::size_t i=0; i<rd_data.size(); i++)
     {
         int r = sprintf(bufp, HIST_DATA_FORMAT, rd_data[i], (i >= wr_data.size()) ? 0.0 : wr_data[i]);
         bufp += r;

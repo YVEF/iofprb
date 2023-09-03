@@ -4,18 +4,22 @@
 #include <vector>
 #include <string>
 
-
+#define HIST_FILENAME ".iofprbhist"
 namespace ambient {
 
 typedef std::vector<double> read_thr_t;
 typedef std::vector<double> write_thr_t;
-typedef std::pair<read_thr_t, write_thr_t> hist_t;
+typedef struct
+{
+    read_thr_t read;
+    write_thr_t write;
+} hist_t;;
 
 class hist
 {
 public:
     explicit hist(std::string base_path) noexcept
-    : file_name(".iofprbhist"), base_path_(std::move(base_path)) {}
+    : file_name(HIST_FILENAME), base_path_(std::move(base_path)) {}
 
     void clear();
     hist_t load();

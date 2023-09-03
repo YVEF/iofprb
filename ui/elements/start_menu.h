@@ -15,10 +15,7 @@ public:
     NB_CANV_REGULAR_OVERRIDE
 
     explicit start_menu(config_state& config, const ambient::driveprv&) noexcept
-    : config_(config)
-    {
-
-    }
+    : config_(config) { }
 
 private:
     ImGuiWindowFlags flags_ = ImGuiWindowFlags_NoTitleBar
@@ -30,7 +27,7 @@ private:
     bool is_run_pressed_ = false;
     config_state& config_;
 
-    void reset_config() noexcept;
+    void reset_config() const noexcept;
 };
 
 } // ui

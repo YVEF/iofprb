@@ -12,7 +12,8 @@ namespace ImGui::Custom {
 float ProgressBar(float value, const float minValue, const float maxValue, const char *format,
                   const ImVec2 &sizeOfBarWithoutTextInPixels, const ImVec4 &colorLeft, const ImVec4 &colorRight, const ImVec4 &colorBorder);
 
-//typedef void(ui::start_menu::*fnc)() noexcept;
+void PushDisabledStyle() noexcept;
+void PullDisabledStyle() noexcept;
 
 template<typename T1>
 bool RenderCombo(const char* name, float width,
@@ -21,14 +22,8 @@ bool RenderCombo(const char* name, float width,
                  bool enabled = true)
 {
     bool was_changed = false;
-    if(width != -1)
-        ImGui::PushItemWidth(width);
-
-    if(!enabled)
-    {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-    }
+    if(width != -1) ImGui::PushItemWidth(width);
+    if(!enabled) PushDisabledStyle();
 
     if(ImGui::BeginCombo(name, values[*selected_item].second.data()))
     {
@@ -49,14 +44,8 @@ bool RenderCombo(const char* name, float width,
 
         ImGui::EndCombo();
     }
-    if(width != -1)
-        ImGui::PopItemWidth();
-
-    if(!enabled)
-    {
-        ImGui::PopStyleVar();
-        ImGui::PopItemFlag();
-    }
+    if(width != -1) ImGui::PopItemWidth();
+    if(!enabled) PullDisabledStyle();
 
     return was_changed;
 }

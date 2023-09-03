@@ -19,26 +19,22 @@ static inline double update_min(double min, double max, const jobs::job_msg& msg
             min;
 }
 
-int bench_chart::next() const noexcept
-{
-    return goback ? -1 : 0;
-}
-
-void bench_chart::adjust() noexcept
-{
-    job_->start();
-}
+int bench_chart::next() const noexcept { return goback ? -1 : 0; }
+void bench_chart::adjust() noexcept { job_->start(); }
 
 bench_chart::bench_chart(config_state& config, const ambient::driveprv& drv) noexcept
 : config_(config), goback(false), was_stopped_(false), stop_requtested_(false), c_iteration_(0), c_round_(1),
     read_max_(0.0), read_min_(-1.0), write_max_(0.0), write_min_(-1.0), driverprv_(drv)
 {
     iterations_.push_back(0.0);
-    round_read_thr_.push_back(0.0);
-    round_write_thr_.push_back(0.0);
     job_ = jobs::allocate_job(config_, driverprv_.get_disk(config_.get_disk_uuid()));
     // !!! temp
-    hist_ = std::make_unique<ambient::hist>("/home/iaroslav/CLionProjects");
+    hist_ = std::make_unique<ambient::hist>(config_.hist_dir);
+//    ambient::hist_t history = hist_->load();
+//    round_read_thr_ = std::move(history.read);
+//    round_write_thr_ = std::move(history.write);
+    round_read_thr_.push_back(0.0);
+    round_write_thr_.push_back(0.0);
 }
 
 void bench_chart::render(ui::render_context& ctx) noexcept
@@ -203,10 +199,8 @@ void bench_chart::render(ui::render_context& ctx) noexcept
 
 bench_chart::~bench_chart() noexcept
 {
-    std::cout << "~bench_chart" << std::endl;
     auto future = job_->stop();
     if(future.valid()) future.get();
-    std::cout << "~bench_chart end" << std::endl;
 }
 
 } // ui

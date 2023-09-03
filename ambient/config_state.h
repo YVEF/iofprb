@@ -5,11 +5,13 @@
 #include "../utils/typedefs.h"
 #include <vector>
 #include <string>
+#include <cstring>
 
 #define CNFG_ITERATION_COUNT_LIM 16
 #define CNFG_THREADS_CNT_LIM 19
 #define CNFG_1KB 1024U
 #define CNFG_1MG 1048576U
+#define CNFG_HIST_DIR_LEN 256
 
 enum class access_strategy
 {
@@ -80,28 +82,15 @@ struct config_state
     valuelist_pairs_t<uint> iterations{CNFG_ITERATION_COUNT_LIM};
     valuelist_pairs_t<uint> threads{CNFG_THREADS_CNT_LIM};
     std::vector<ambient::disk_draw_info> disks_info;
+
+    // build separated disk names vector
     // to satisfy a common infrastructure
     valuelist_pairs_t<uint> disk_names;
     bool preserve_history = true;
+    char hist_dir[CNFG_HIST_DIR_LEN];
 
-    explicit config_state(std::vector<ambient::disk_draw_info> disksinfo) noexcept
-            : disks_info(std::move(disksinfo))
-    {
-        disk_names.reserve(disks_info.size());
-        for(uint i=0; i<disks_info.size(); i++)
-            disk_names.emplace_back(std::make_pair(i, disks_info[i].name));
-
-        for(uint i=1; i < CNFG_ITERATION_COUNT_LIM; i++)
-            iterations.emplace_back(std::make_pair(i, std::to_string(i)));
-
-        for(uint i=1; i < CNFG_THREADS_CNT_LIM; i++)
-            threads.emplace_back(std::make_pair(i, std::to_string(i)));
-    }
-
-    void reset_partition() noexcept
-    {
-        partition_id = 0;
-    }
+    explicit config_state(std::vector<ambient::disk_draw_info> disksinfo) noexcept;
+    void reset_partition() noexcept { partition_id = 0; }
 
     [[nodiscard]] uint get_iterations() const noexcept;
     [[nodiscard]] uint get_threads() const noexcept;
@@ -109,6 +98,7 @@ struct config_state
     [[nodiscard]] const std::string& get_disk_uuid() const noexcept;
     [[nodiscard]] uint get_block_size() const noexcept;
     [[nodiscard]] uint get_alloc_chunk() const noexcept;
+    [[nodiscard]] const std::string& get_disk_description() const noexcept;
 };
 
 #endif //IOFPRB_CONFIG_STATE_H

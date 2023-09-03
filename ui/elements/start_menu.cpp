@@ -13,12 +13,10 @@ int start_menu::next() const noexcept
     return 0;
 }
 
-void start_menu::reset_config() noexcept
+void start_menu::reset_config() const noexcept
 {
     config_.reset_partition();
 }
-
-typedef void(*notify_changed_callback__m)() noexcept;
 
 void start_menu::render(ui::render_context& ctx) noexcept
 {
@@ -32,7 +30,7 @@ void start_menu::render(ui::render_context& ctx) noexcept
             return;
         }
 
-        if(ImGui::Custom::RenderCombo("##diskmenu", -1.f, &config_.disk_info_id, config_.disk_names, true))
+        if(ImGui::Custom::RenderCombo("##diskmenu", -1.f, &config_.disk_info_id, config_.disk_names))
             reset_config();
 
         ImGui::SameLine(0, ctx.standard_space);
@@ -40,7 +38,7 @@ void start_menu::render(ui::render_context& ctx) noexcept
         if(ImGui::Custom::RenderButton("Run", ctx))
             is_run_pressed_ = true;
 
-        const std::string& description = config_.disks_info[config_.disk_info_id].description;
+        const std::string& description = config_.get_disk_description();
 
         ImGui::Separator();
         ImGui::Text("%s", description.c_str());
@@ -147,11 +145,16 @@ void start_menu::render(ui::render_context& ctx) noexcept
         if(ImGui::BeginChild("tune", ImVec2(ImGui::GetContentRegionAvail().x, 35), true))
         {
             ImGui::Checkbox("Preserve History", &config_.preserve_history);
+            ImGui::SameLine(0, ctx.standard_space);
+
+            if(!config_.preserve_history) ImGui::Custom::PushDisabledStyle();
+            ImGui::InputText("history directory", config_.hist_dir, CNFG_HIST_DIR_LEN);
+            if(!config_.preserve_history) ImGui::Custom::PullDisabledStyle();
+
             ImGui::EndChild();
         }
 
         ImGui::PopStyleVar();
-
 
         float off = ctx.get_offset().y;
         ImGui::SetWindowSize(ImVec2(viewport->Size.x, viewport->Size.y - off));

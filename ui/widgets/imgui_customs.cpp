@@ -55,4 +55,16 @@ bool RenderButton(const char* label, const ui::render_context& ctx, bool enabled
     return result;
 }
 
+void PushDisabledStyle() noexcept
+{
+    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+}
+
+void PullDisabledStyle() noexcept
+{
+    ImGui::PopStyleVar();
+    ImGui::PopItemFlag();
+}
+
 }

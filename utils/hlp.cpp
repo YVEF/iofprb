@@ -33,3 +33,19 @@ void to_ascii_upper_case(std::string& str)
             c = static_cast<char>(i-32);
     }
 }
+
+#define TMP_FILE_NAME_LEN 10
+std::string get_tmp_file_name()
+{
+    static const char alphanum[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+
+    std::string res; res.reserve(TMP_FILE_NAME_LEN);
+
+    for (int i = 0; i < TMP_FILE_NAME_LEN; ++i)
+        res += alphanum[rand() % (sizeof(alphanum) - 1)];
+
+    return res;
+}
