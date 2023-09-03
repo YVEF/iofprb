@@ -29,6 +29,7 @@ enum class engine
 #endif
 };
 
+constexpr char lol[std::max(CNFG_ITERATION_COUNT_LIM, CNFG_THREADS_CNT_LIM)] = {};
 
 struct config_state
 {
