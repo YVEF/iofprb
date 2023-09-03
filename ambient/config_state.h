@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <cstring>
+#include "../utils/hlp.h"
 
 #define CNFG_ITERATION_COUNT_LIM 16
 #define CNFG_THREADS_CNT_LIM 19
@@ -29,12 +30,10 @@ enum class engine
 #endif
 };
 
-constexpr char lol[std::max(CNFG_ITERATION_COUNT_LIM, CNFG_THREADS_CNT_LIM)] = {};
-
 struct config_state
 {
     template<typename TFirst>
-    using valuelist_pairs_t = std::vector<std::pair<TFirst, std::string_view>>;
+    using valuelist_pairs_t = std::vector<std::pair<TFirst, std::string>>;
 
     int partition_id = 0;
     int iterations_id = 4;
