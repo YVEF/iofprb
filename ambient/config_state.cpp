@@ -3,12 +3,12 @@
 
 uint config_state::get_iterations() const noexcept
 {
-    return iterations[iterations_id];
+    return iterations[iterations_id].first;
 }
 
 uint config_state::get_threads() const noexcept
 {
-    return threads[threads_id];
+    return threads[threads_id].first;
 }
 
 engine config_state::get_engine() const noexcept

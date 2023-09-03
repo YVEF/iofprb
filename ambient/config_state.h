@@ -77,19 +77,25 @@ struct config_state
             std::make_pair(engine::KMOD, "kmodule")
     };
 
-    std::vector<uint> iterations;
-    std::vector<uint> threads;
+    valuelist_pairs_t<uint> iterations{CNFG_ITERATION_COUNT_LIM};
+    valuelist_pairs_t<uint> threads{CNFG_THREADS_CNT_LIM};
     std::vector<ambient::disk_draw_info> disks_info;
+    // to satisfy a common infrastructure
+    valuelist_pairs_t<uint> disk_names;
     bool preserve_history = true;
 
     explicit config_state(std::vector<ambient::disk_draw_info> disksinfo) noexcept
             : disks_info(std::move(disksinfo))
     {
-        for(uint i=1; i < CNFG_ITERATION_COUNT_LIM; i++)
-            iterations.push_back(i);
+        disk_names.reserve(disks_info.size());
+        for(uint i=0; i<disks_info.size(); i++)
+            disk_names.emplace_back(std::make_pair(i, disks_info[i].name));
 
-        for(int i=1; i < CNFG_THREADS_CNT_LIM; i++)
-            threads.push_back(i);
+        for(uint i=1; i < CNFG_ITERATION_COUNT_LIM; i++)
+            iterations.emplace_back(std::make_pair(i, std::to_string(i)));
+
+        for(uint i=1; i < CNFG_THREADS_CNT_LIM; i++)
+            threads.emplace_back(std::make_pair(i, std::to_string(i)));
     }
 
     void reset_partition() noexcept

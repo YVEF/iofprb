@@ -29,6 +29,8 @@ private:
 
     bool is_run_pressed_ = false;
     config_state& config_;
+
+    void reset_config() noexcept;
 };
 
 } // ui

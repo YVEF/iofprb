@@ -13,6 +13,13 @@ int start_menu::next() const noexcept
     return 0;
 }
 
+void start_menu::reset_config() noexcept
+{
+    config_.reset_partition();
+}
+
+typedef void(*notify_changed_callback__m)() noexcept;
+
 void start_menu::render(ui::render_context& ctx) noexcept
 {
     auto viewport = ImGui::GetMainViewport();
@@ -25,15 +32,8 @@ void start_menu::render(ui::render_context& ctx) noexcept
             return;
         }
 
-        auto& conf = config_;
-        std::function<void(void)> notify_changed = [&conf](){ conf.reset_partition(); };
-
-        ImGui::Custom::RenderCombo("##diskmenu", -1.f, &config_.disk_info_id,
-                                   config_.disks_info,
-                                   (std::function<std::string(int)>)
-                                   [&disks](int i) { return disks[i].name; },
-                                   true,
-                                   &notify_changed);
+        if(ImGui::Custom::RenderCombo("##diskmenu", -1.f, &config_.disk_info_id, config_.disk_names, true))
+            reset_config();
 
         ImGui::SameLine(0, ctx.standard_space);
 
@@ -124,43 +124,22 @@ void start_menu::render(ui::render_context& ctx) noexcept
 
         if(ImGui::BeginChild("bordered_combo", ImVec2(ImGui::GetContentRegionAvail().x, 35), true))
         {
-            auto& allocs = config_.alloc_chunks;
-            ImGui::Custom::RenderCombo("Allocations", 75.f, &config_.alloc_chnk_id, allocs,
-                                       (std::function<std::string_view(int)>)[&allocs](int i)
-                                       { return allocs[i].second; });
-
+            ImGui::Custom::RenderCombo("Allocations", 75.f, &config_.alloc_chnk_id, config_.alloc_chunks);
 
             ImGui::SameLine(0, ctx.standard_space);
-            auto& iters = config_.iterations;
-            ImGui::Custom::RenderCombo("Iterations", 45.f, &config_.iterations_id, iters,
-                                       (std::function<std::string(int)>)[&iters](int i)
-                                       { return std::to_string(iters[i]); });
+            ImGui::Custom::RenderCombo("Iterations", 45.f, &config_.iterations_id, config_.iterations);
 
             ImGui::SameLine(0, ctx.standard_space);
-            auto& threadsv = config_.threads;
-            ImGui::Custom::RenderCombo("Threads", 45.f, &config_.threads_id, threadsv,
-                                       (std::function<std::string(int)>)[&threadsv](int i)
-                                       { return std::to_string(threadsv[i]); },
-                                       false);
+            ImGui::Custom::RenderCombo("Threads", 45.f, &config_.threads_id, config_.threads, false);
 
             ImGui::SameLine(0, ctx.standard_space);
-            auto& accesstype = config_.access;
-            ImGui::Custom::RenderCombo("Access Type", 51.f, &config_.access_id, accesstype,
-                                       (std::function<std::string_view(int)>)[&accesstype](int i)
-                                       { return accesstype[i].second; },
-                                       false);
+            ImGui::Custom::RenderCombo("Access Type", 51.f, &config_.access_id, config_.access, false);
 
             ImGui::SameLine(0, ctx.standard_space);
-            auto& blksize = config_.block_size;
-            ImGui::Custom::RenderCombo("Blk Size", 61.f, &config_.block_size_id, blksize,
-                                       (std::function<std::string_view(int)>)
-                                               [&blksize](int i) { return blksize[i].second; });
+            ImGui::Custom::RenderCombo("Blk Size", 61.f, &config_.block_size_id, config_.block_size);
 
             ImGui::SameLine(0, ctx.standard_space);
-            auto& prec = config_.engines;
-            ImGui::Custom::RenderCombo("Engine", 90.f, &config_.engine_id, prec,
-                                       (std::function<std::string_view(int)>)
-                                               [&prec](int i) { return prec[i].second; });
+            ImGui::Custom::RenderCombo("Engine", 90.f, &config_.engine_id, config_.engines);
 
             ImGui::EndChild();
         }

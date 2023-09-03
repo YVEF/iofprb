@@ -7,20 +7,20 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include "../render_context.h"
-
 namespace ImGui::Custom {
 
 float ProgressBar(float value, const float minValue, const float maxValue, const char *format,
                   const ImVec2 &sizeOfBarWithoutTextInPixels, const ImVec4 &colorLeft, const ImVec4 &colorRight, const ImVec4 &colorBorder);
 
+//typedef void(ui::start_menu::*fnc)() noexcept;
 
-template<typename TEll, typename TStr>
-void RenderCombo(const char* name, float width, int* selected_item,
-                 const std::vector<TEll>& collection,
-                 const std::function<TStr(int)>& get_str,
-                 bool enabled = true,
-                 const std::function<void(void)>* notify_changed = nullptr)
+template<typename T1>
+bool RenderCombo(const char* name, float width,
+                 int* selected_item,
+                 const config_state::valuelist_pairs_t<T1>& values,
+                 bool enabled = true)
 {
+    bool was_changed = false;
     if(width != -1)
         ImGui::PushItemWidth(width);
 
@@ -30,18 +30,17 @@ void RenderCombo(const char* name, float width, int* selected_item,
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
     }
 
-    if(ImGui::BeginCombo(name, get_str(*selected_item).data()))
+    if(ImGui::BeginCombo(name, values[*selected_item].second.data()))
     {
-        int sz = static_cast<int>(collection.size());
+        int sz = static_cast<int>(values.size());
         for(int i=0; i<sz; i++)
         {
             bool is_sel = *selected_item == i;
-            if (ImGui::Selectable(get_str(i).data(), is_sel))
+            if (ImGui::Selectable(values[i].second.data(), is_sel))
             {
                 int prev = *selected_item;
                 *selected_item = i;
-                if(prev != *selected_item && notify_changed != nullptr)
-                    (*notify_changed)();
+                if(prev != *selected_item) was_changed = true;
             }
 
             if (is_sel)
@@ -58,6 +57,8 @@ void RenderCombo(const char* name, float width, int* selected_item,
         ImGui::PopStyleVar();
         ImGui::PopItemFlag();
     }
+
+    return was_changed;
 }
 
 bool RenderButton(const char* label, const ui::render_context& ctx, bool enabled = true);
