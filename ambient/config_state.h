@@ -79,8 +79,8 @@ struct config_state
             std::make_pair(engine::KMOD, "kmodule")
     };
 
-    valuelist_pairs_t<uint> iterations{CNFG_ITERATION_COUNT_LIM};
-    valuelist_pairs_t<uint> threads{CNFG_THREADS_CNT_LIM};
+    valuelist_pairs_t<uint> iterations;
+    valuelist_pairs_t<uint> threads;
     std::vector<ambient::disk_draw_info> disks_info;
 
     // build separated disk names vector

@@ -39,6 +39,9 @@ config_state::config_state(std::vector<ambient::disk_draw_info> disksinfo) noexc
 : disks_info(std::move(disksinfo))
 {
     disk_names.reserve(disks_info.size());
+    iterations.reserve(CNFG_ITERATION_COUNT_LIM);
+    threads.reserve(CNFG_THREADS_CNT_LIM);
+
     for(const auto& d : disks_info)
         disk_names.emplace_back(0, d.name);
 
