@@ -11,40 +11,20 @@ using timepoint_t = std::chrono::time_point<std::chrono::steady_clock>;
 class timerw
 {
 public:
-    inline void start() noexcept
-    {
-        start_tp_ = std::chrono::steady_clock::now();
-        is_running_ = true;
-    }
-
-    inline void stop() noexcept
-    {
-        if(!is_running_)
-            return;
-
-        auto stop = std::chrono::steady_clock::now();
-        elapsed_ += (stop - start_tp_);
-    }
-
-    inline void reset() noexcept
-    {
-        elapsed_ = std::chrono::nanoseconds(0);
-    }
-
-    void initialize() noexcept
-    {
-        start();
-        stop();
-        reset();
-    }
-
-    long microseconds() const noexcept;
-    long nanoseconds() const noexcept;
+    void start() noexcept;
+    void stop() noexcept;
+    void reset() noexcept;
+    void initialize() noexcept;
+    void update_syscalls_cost() noexcept;
+    long microseconds(std::size_t syscalls_count) const noexcept;
+    long nanoseconds(std::size_t syscalls_count) const noexcept;
 
 private:
     bool is_running_ = false;
     timepoint_t start_tp_;
     std::chrono::nanoseconds elapsed_{0};
+    std::chrono::nanoseconds syscall_cost_{0};
+    std::chrono::nanoseconds elapsed(std::size_t syscalls_count) const noexcept;
 };
 
 } // jobs

@@ -48,7 +48,15 @@ void job::start()
 void job::terminate_if_requested() const noexcept
 {
     if(stop_by_termination.load(std::memory_order_acquire))
+    {
+        while(true)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+        }
+
         std::terminate();
+    }
+
 }
 
 std::future<void> job::stop()
@@ -56,7 +64,7 @@ std::future<void> job::stop()
     if(!is_running.load(std::memory_order_acquire))
         return std::future<void>{};
 
-    update_phase("Stopping");
+    update_phase("Stop");
     stop_by_termination.store(true, std::memory_order_release);
     // don't care about possible dangling pointer because the job will
     // be terminated in .dtor in any case
@@ -67,7 +75,9 @@ std::future<void> job::stop()
                 for(auto& w : workers)
                     w.join();
             });
-            workers_joining.wait_for(std::chrono::seconds(10));
+            std::cout << "!!!!!11" << std::endl;
+            workers_joining.wait_for(std::chrono::seconds(30));
+            std::cout << "here" << std::endl;
             if(waitpid(child_pid_, nullptr, WNOHANG) != -1) kill(child_pid_, SIGINT);
         }
         catch(...) {}

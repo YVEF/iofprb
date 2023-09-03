@@ -124,7 +124,7 @@ double syscalls_job::emit_requests(const std::shared_ptr<struct iovec>& iov,
         io_uring_cqe_seen(&ring, cqe);
     }
 
-    long micr = timer.nanoseconds();
+    long micr = timer.nanoseconds(num_blocks);
     timer.reset();
     double elapsed = static_cast<double>(micr)/1e9;
     return static_cast<double>(config_.get_alloc_chunk()) / elapsed / CNFG_1MG;
@@ -155,7 +155,7 @@ void syscalls_job::initialize_()
 
 void syscalls_job::start_()
 {
-    update_phase("job allocation");
+    update_phase("job setup");
     // allocate fs space + a bit extra
     if(generate_content(fd_, config_.get_alloc_chunk() + pgsize_))
         raise_err("allocation error");
