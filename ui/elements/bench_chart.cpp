@@ -26,7 +26,8 @@ bench_chart::bench_chart(config_state& config, const ambient::driveprv& drv) noe
 : config_(config), goback(false), was_stopped_(false), stop_requtested_(false), c_iteration_(0), c_round_(1),
     read_max_(0.0), read_min_(-1.0), write_max_(0.0), write_min_(-1.0), driverprv_(drv)
 {
-    iterations_.push_back(0.0);
+    iterations_.reserve(config_.get_iterations()+1);
+//    iterations_.push_back(0.0);
     job_ = jobs::allocate_job(config_, driverprv_.get_disk(config_.get_disk_uuid()));
     // !!! temp
     hist_ = std::make_unique<ambient::hist>(config_.hist_dir);
@@ -119,11 +120,13 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         if(c_iteration_ - 1 == iteration_count)
         {
             iterations_.clear();
-            iterations_.push_back(0.0);
+//            iterations_.push_back(0.0);
             c_iteration_ = 0;
         }
 
         iterations_.push_back(msg.throughput);
+        // to properly scale y-axis
+        if(iterations_.size() == 1) iterations_.push_back(iterations_[0]);
         double& total = set.back();
         total = std::max(total, msg.throughput);
 

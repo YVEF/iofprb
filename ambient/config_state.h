@@ -86,7 +86,7 @@ struct config_state
     // build separated disk names vector
     // to satisfy a common infrastructure
     valuelist_pairs_t<uint> disk_names;
-    bool preserve_history = true;
+    bool use_history = false;
     char hist_dir[CNFG_HIST_DIR_LEN];
 
     explicit config_state(std::vector<ambient::disk_draw_info> disksinfo) noexcept;

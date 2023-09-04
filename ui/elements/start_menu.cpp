@@ -144,12 +144,12 @@ void start_menu::render(ui::render_context& ctx) noexcept
 
         if(ImGui::BeginChild("tune", ImVec2(ImGui::GetContentRegionAvail().x, 35), true))
         {
-            ImGui::Checkbox("Preserve History", &config_.preserve_history);
+            ImGui::Checkbox("Use History", &config_.use_history);
             ImGui::SameLine(0, ctx.standard_space);
 
-            if(!config_.preserve_history) ImGui::Custom::PushDisabledStyle();
+            if(!config_.use_history) ImGui::Custom::PushDisabledStyle();
             ImGui::InputText("history directory", config_.hist_dir, CNFG_HIST_DIR_LEN);
-            if(!config_.preserve_history) ImGui::Custom::PullDisabledStyle();
+            if(!config_.use_history) ImGui::Custom::PullDisabledStyle();
 
             ImGui::EndChild();
         }

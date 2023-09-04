@@ -48,19 +48,12 @@ void job::start()
 void job::terminate_if_requested() const noexcept
 {
     if(stop_by_termination.load(std::memory_order_acquire))
-    {
-        while(true)
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-        }
-
         std::terminate();
-    }
-
 }
 
 std::future<void> job::stop()
 {
+//    blkio_delay_total
     if(!is_running.load(std::memory_order_acquire))
         return std::future<void>{};
 
@@ -78,7 +71,12 @@ std::future<void> job::stop()
             std::cout << "!!!!!11" << std::endl;
             workers_joining.wait_for(std::chrono::seconds(30));
             std::cout << "here" << std::endl;
-            if(waitpid(child_pid_, nullptr, WNOHANG) != -1) kill(child_pid_, SIGINT);
+            auto rr = waitpid(child_pid_, nullptr, WNOHANG);
+            if(rr != -1)
+            {
+                std::cout << "terminated by SIGINT" << "r = " << rr<< std::endl;
+                kill(child_pid_, SIGINT);
+            }
         }
         catch(...) {}
         free(child_stack_);

@@ -101,6 +101,11 @@ double syscalls_job::emit_requests(const std::shared_ptr<struct iovec>& iov,
 
     for (std::size_t i = 0; i < num_blocks; i++)
     {
+//        auto r1 = io_uring_sqring_wait(&ring);
+//        io_uring_queue_mmap() ??
+
+
+
         off_t offset = i * butch_size;
         struct io_uring_sqe* sqe = io_uring_get_sqe(&ring);
         if (!sqe)
@@ -108,6 +113,7 @@ double syscalls_job::emit_requests(const std::shared_ptr<struct iovec>& iov,
 
         prev_req(sqe, fd_, iov.get(), queue_count_, offset);
         sqe->flags |= IOSQE_IO_DRAIN;
+//        sqe->ioprio |= IORING_RECVSEND_POLL_FIRST;
 
         if (io_uring_submit(&ring) < 0)
             raise_err("io_uring_submit failed");
