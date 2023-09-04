@@ -24,7 +24,7 @@ static disk_draw_info build_disk_info(const diskctx* disk)
     return info;
 }
 
-std::vector<disk_draw_info> driveprv::get_drives_info() const noexcept
+std::vector<disk_draw_info> driveprv::get_devs_info() const noexcept
 {
     std::vector<disk_draw_info> result;
     std::transform(disks_.begin(), disks_.end(), std::back_inserter(result),

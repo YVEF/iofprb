@@ -57,24 +57,26 @@ std::future<void> job::stop()
     if(!is_running.load(std::memory_order_acquire))
         return std::future<void>{};
 
-    update_phase("Stop");
+    update_phase("Job cancellation");
     stop_by_termination.store(true, std::memory_order_release);
+
     // don't care about possible dangling pointer because the job will
     // be terminated in .dtor in any case
     return std::async(std::launch::async, [this]() noexcept {
         try
         {
-            auto workers_joining = std::async([&workers = workers_](){
+            auto workers_joining = std::async([&workers = workers_, ch = child_pid_](){
                 for(auto& w : workers)
                     w.join();
+
+                waitpid(ch, nullptr, 0);
             });
             std::cout << "!!!!!11" << std::endl;
             workers_joining.wait_for(std::chrono::seconds(30));
             std::cout << "here" << std::endl;
-            auto rr = waitpid(child_pid_, nullptr, WNOHANG);
-            if(rr != -1)
+            if(waitpid(child_pid_, nullptr, WNOHANG) != -1)
             {
-                std::cout << "terminated by SIGINT" << "r = " << rr<< std::endl;
+                std::cout << "terminated by SIGINT" << std::endl;
                 kill(child_pid_, SIGINT);
             }
         }

@@ -80,7 +80,7 @@ void timerw::update_syscalls_cost() noexcept
     for(std::size_t i=0; i<TIMERW_SYSCALS_NMB; i++)
     {
         read_barrier();
-        auto r = internal::probe_syscall(0, X64_READV);
+        [[maybe_unused]] auto r = internal::probe_syscall(0, X64_READV);
     }
     stop();
     syscall_cost_ = elapsed_ / TIMERW_SYSCALS_NMB;

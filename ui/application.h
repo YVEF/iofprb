@@ -388,7 +388,7 @@ static inline void FramePresent(ImGui_ImplVulkanH_Window* wd)
 class application
 {
 public:
-    explicit application(ambient::driveprv& drv) noexcept : config_(drv.get_drives_info()), driveprv_(drv)
+    explicit application(ambient::driveprv& drv) noexcept : config_(drv.get_devs_info()), driveprv_(drv)
     {
 
     }

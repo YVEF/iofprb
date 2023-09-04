@@ -1,4 +1,11 @@
 #include "config_state.h"
+#include <iostream>
+
+
+const std::string& config_state::get_partname() const noexcept
+{
+    return disks_info[disk_info_id].partitions->at(partition_id)->devname;
+}
 
 const std::string& config_state::get_disk_description() const noexcept
 {
@@ -23,6 +30,11 @@ engine config_state::get_engine() const noexcept
 const std::string& config_state::get_disk_uuid() const noexcept
 {
     return disks_info[disk_info_id].uuid;
+}
+
+const std::string& config_state::get_devname() const noexcept
+{
+    return disks_info[disk_info_id].name;
 }
 
 uint config_state::get_block_size() const noexcept

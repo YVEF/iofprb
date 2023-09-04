@@ -20,6 +20,18 @@
 
 namespace jobs {
 
+namespace internal {
+struct diskstats
+{
+    unsigned long io_inflight; // currently in the queue
+    unsigned long rd_iotime; // total read io time
+    unsigned long wr_iotime; // total write io time
+};
+
+static diskstats rdstats(const char* devname);
+}
+
+
 
 syscalls_job::syscalls_job(const config_state& config, const diskctx* disk) noexcept
 : job(config, disk)
@@ -92,19 +104,24 @@ double syscalls_job::emit_requests(const std::shared_ptr<struct iovec>& iov,
                                    std::size_t num_blocks,
                                    struct io_uring& ring,
                                    __s32 butch_size,
-                                   io_uring_prev_reqv_t prev_req)
+                                   io_uring_prep_reqv_t prev_req)
 {
     terminate_if_requested();
 
     timerw timer;
     timer.initialize();
 
+    auto stats = internal::rdstats(disk_->short_devname.c_str());
     for (std::size_t i = 0; i < num_blocks; i++)
     {
-//        auto r1 = io_uring_sqring_wait(&ring);
-//        io_uring_queue_mmap() ??
-
-
+        // first check if something in waiting queue
+        int waiting_loop = 10;
+        while(stats.io_inflight > 0 && waiting_loop-- > 0)
+        {
+            std::cout << "loop " << waiting_loop << std::endl;
+            sleep(1);
+            stats = internal::rdstats(disk_->short_devname.c_str());
+        }
 
         off_t offset = i * butch_size;
         struct io_uring_sqe* sqe = io_uring_get_sqe(&ring);
@@ -113,7 +130,6 @@ double syscalls_job::emit_requests(const std::shared_ptr<struct iovec>& iov,
 
         prev_req(sqe, fd_, iov.get(), queue_count_, offset);
         sqe->flags |= IOSQE_IO_DRAIN;
-//        sqe->ioprio |= IORING_RECVSEND_POLL_FIRST;
 
         if (io_uring_submit(&ring) < 0)
             raise_err("io_uring_submit failed");
@@ -130,9 +146,10 @@ double syscalls_job::emit_requests(const std::shared_ptr<struct iovec>& iov,
         io_uring_cqe_seen(&ring, cqe);
     }
 
-    long micr = timer.nanoseconds(num_blocks);
+    long nanos = timer.nanoseconds(num_blocks);
     timer.reset();
-    double elapsed = static_cast<double>(micr)/1e9;
+
+    double elapsed = static_cast<double>(nanos) / 1e9;
     return static_cast<double>(config_.get_alloc_chunk()) / elapsed / CNFG_1MG;
 }
 
@@ -237,4 +254,33 @@ void syscalls_job::start_()
 
     io_uring_queue_exit(&ring);
 }
+
+namespace internal {
+#define JOBS_INTERNAL_DISKSTATS_SYSFS "/sys/class/block/%s/stat"
+
+static diskstats rdstats(const char* devname)
+{
+    // todo: store the sysfs file name within job
+    char sysfs_block_filename[100];
+    sprintf(sysfs_block_filename, JOBS_INTERNAL_DISKSTATS_SYSFS, devname);
+
+    diskstats dstat{};
+    std::cout << sysfs_block_filename << std::endl;
+    auto fst = open(sysfs_block_filename, O_RDONLY);
+    assert(fst != -1);
+
+    char buf[256];
+    read(fst, buf, sizeof(buf));
+    sscanf(buf, " %*d %*d %*d %ld %*d %*d %*d %ld %ld ", &dstat.rd_iotime, &dstat.wr_iotime, &dstat.io_inflight);
+
+    close(fst);
+    return dstat;
+}
+
+}
+
+
+
+
+
 } // jobs

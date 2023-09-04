@@ -120,7 +120,6 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         if(c_iteration_ - 1 == iteration_count)
         {
             iterations_.clear();
-//            iterations_.push_back(0.0);
             c_iteration_ = 0;
         }
 
@@ -138,6 +137,10 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         write_min_ = update_min(write_min_, write_max_, msg, jobs::measure_type::WRITE);
     }
 
+    auto minax = std::min(read_min_, write_min_);
+    auto maxax = std::max(round_read_thr_.back(), round_write_thr_.back());
+    auto diff = maxax - minax;
+
     if(ImGui::Begin("##chart1", nullptr, blockflags_))
     {
         auto off = ctx.get_offset();
@@ -146,8 +149,10 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         ImGui::SetWindowSize(size);
         ctx.add_offset(ImVec2(0, ImGui::GetWindowHeight()));
 
-        ImPlot::SetNextAxisToFit(ImAxis_Y1);
+        ImPlot::SetNextAxisLimits(ImAxis_Y1, minax - diff*0.05, maxax + diff * 0.1, ImPlotCond_Always);
+//        ImPlot::SetNextAxisToFit(ImAxis_Y1);
         ImPlot::SetNextAxisLimits(ImAxis_X1, 0, iteration_count, ImPlotCond_Always);
+
 
         if (ImPlot::BeginPlot("##lineplot", ImVec2(size.x-17, size.y-17), plotflags_))
         {
@@ -174,10 +179,7 @@ void bench_chart::render(ui::render_context& ctx) noexcept
         ctx.add_offset(ImVec2(0, ImGui::GetWindowHeight()));
 
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 2.f);
-
-        ImPlot::SetNextAxisLimits(ImAxis_Y1, std::min(read_min_, write_min_) - 0.8,
-                                  std::max(round_read_thr_.back(), round_write_thr_.back()) + 1.2,
-                                  ImPlotCond_Always);
+        ImPlot::SetNextAxisLimits(ImAxis_Y1, minax - diff*0.1, maxax + diff*0.2, ImPlotCond_Always);
 
         ImPlot::SetNextAxisLimits(ImAxis_X1, 0, std::max(5, static_cast<int>(round_read_thr_.size() + 1)), ImPlotCond_Always);
 

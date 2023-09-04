@@ -99,6 +99,8 @@ struct config_state
     [[nodiscard]] uint get_block_size() const noexcept;
     [[nodiscard]] uint get_alloc_chunk() const noexcept;
     [[nodiscard]] const std::string& get_disk_description() const noexcept;
+    [[nodiscard]] const std::string& get_devname() const noexcept;
+    [[nodiscard]] const std::string& get_partname() const noexcept;
 };
 
 #endif //IOFPRB_CONFIG_STATE_H

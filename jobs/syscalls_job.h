@@ -29,7 +29,7 @@ private:
     std::string mapping_dir_;
     partinfo* device_partition_;
 
-    using io_uring_prev_reqv_t = void(*)(struct io_uring_sqe *sqe, int fd,
+    using io_uring_prep_reqv_t = void(*)(struct io_uring_sqe *sqe, int fd,
                                          const struct iovec *iovecs,
                                          unsigned nr_vecs, __u64 offset);
 
@@ -37,8 +37,10 @@ private:
                          std::size_t num_blocks,
                          struct io_uring& ring,
                          __s32 butch_size,
-                         io_uring_prev_reqv_t);
+                         io_uring_prep_reqv_t);
 
+    // internal usages
+//    char sysfs_stat_f[70];
 };
 
 } // jobs
